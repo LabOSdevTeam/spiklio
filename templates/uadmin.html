@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Spiklio — Client Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        html { -webkit-tap-highlight-color: transparent; }
+        a, button, [role=button], label { -webkit-touch-callout: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --cw-ink: #14172b;
+            --cw-primary: #4c5fd7;
+            --cw-primary-dark: #3f50c4;
+            --cw-soft: #eef0ff;
+            --cw-line: #dfe3f5;
+            --cw-bg: #f6f8ff;
+            --cw-mut: rgba(20, 23, 43, .58);
+            --cw-ok: #15803d;  --cw-ok-bg: #e3f8ea;
+            --cw-warn: #b26a00; --cw-warn-bg: #fff3dc;
+            --cw-bad: #d6333f; --cw-bad-bg: #fdecee;
+            --r: 14px;
+            --shadow: 0 1px 2px rgba(20,23,43,.04), 0 8px 24px -14px rgba(76,95,215,.25);
+        }
+
+        html, body { height: 100%; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px; background: var(--cw-bg); color: var(--cw-ink);
+            -webkit-font-smoothing: antialiased; overflow: hidden;
+        }
+        h1, h2, h3, .brand { font-family: 'Poppins', 'Inter', sans-serif; letter-spacing: -0.01em; }
+        svg.i { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-thumb { background: rgba(76,95,215,.2); border-radius: 4px; }
+
+        /* ===== ФОРМИ ===== */
+        input[type=text], input[type=search], input[type=password], input[type=number], select, textarea {
+            width: 100%; background: #fff; border: 1px solid var(--cw-line); border-radius: 10px;
+            padding: .6rem .8rem; font: inherit; color: var(--cw-ink); outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        textarea { resize: vertical; line-height: 1.5; }
+        input:focus, select:focus, textarea:focus { border-color: rgba(76,95,215,.6); box-shadow: 0 0 0 4px rgba(76,95,215,.1); }
+        input::placeholder, textarea::placeholder { color: rgba(20,23,43,.4); }
+        input[type=checkbox] { accent-color: var(--cw-primary); width: 15px; height: 15px; }
+
+        /* ===== КНОПКИ ===== */
+        button { font: inherit; }
+        .btn-accent, .ghost, .danger {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            border-radius: 10px; padding: .6rem 1.1rem; font-weight: 600; font-size: .88rem;
+            cursor: pointer; border: 1px solid transparent; text-decoration: none; white-space: nowrap;
+            transition: background .15s, border-color .15s, color .15s;
+        }
+        .btn-accent { background: var(--cw-primary); color: #fff; }
+        .btn-accent:hover { background: var(--cw-primary-dark); }
+        .ghost { background: #fff; color: var(--cw-ink); border-color: var(--cw-line); }
+        .ghost:hover { border-color: var(--cw-primary); color: var(--cw-primary); }
+        .danger { background: #fff; color: var(--cw-bad); border-color: #f3c5c9; }
+        .danger:hover { background: var(--cw-bad-bg); }
+        .small { padding: .4rem .8rem; font-size: .8rem; border-radius: 8px; }
+        button:disabled { opacity: .5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+        /* ===== ЛОГО ===== */
+        .brand { display: inline-flex; align-items: center; gap: 6px; user-select: none; line-height: 1; }
+        .brand-mark { width: 30px; height: 30px; display: flex; flex-shrink: 0; }
+        .brand-mark img { width: 100%; height: 100%; display: block; }
+        .brand-name { color: var(--cw-primary); font-size: 1.3rem; font-weight: 700; letter-spacing: -0.03em; }
+
+        /* ===== КАРКАС ===== */
+        .cx-app { --nav-w: 232px; --asst-w: 340px; display: grid; grid-template-columns: var(--nav-w) minmax(0,1fr) var(--asst-w); height: 100vh; height: 100dvh; transition: grid-template-columns .25s ease; }
+        .cx-app.collapsed-nav { --nav-w: 72px; }
+        .cx-app.collapsed-asst { --asst-w: 56px; }
+
+        /* ---- ліве меню ---- */
+        .cx-nav { background: #fff; border-right: 1px solid var(--cw-line); display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; min-width: 0; position: relative; z-index: 60; }
+        .cx-nav-top { display: flex; align-items: center; padding: 0 4px 14px 6px; }
+        .cx-nav-toggle { background: none; border: none; color: var(--cw-mut); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+        .cx-nav-toggle:hover { background: var(--cw-soft); color: var(--cw-primary); }
+        .cx-nav-toggle svg { width: 16px; height: 16px; transition: transform .25s ease; }
+        .collapsed-nav .cx-nav-toggle svg { transform: rotate(180deg); }
+        .collapsed-nav .cx-nav-top { flex-direction: column; align-items: center; gap: 10px; padding: 0 0 14px; }
+        .collapsed-nav .cx-nav-toggle { order: -1; margin-left: 0; }
+        .cx-nav-label { font-size: .68rem; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; color: var(--cw-mut); padding: 14px 12px 6px; }
+        .cx-tab { display: flex; align-items: center; gap: 12px; width: 100%; padding: .65rem .8rem; border: none; background: none; border-radius: 10px; color: rgba(20,23,43,.72); font-weight: 500; font-size: .9rem; cursor: pointer; text-align: left; transition: background .15s, color .15s; }
+        .cx-tab:hover { background: var(--cw-soft); color: var(--cw-primary); }
+        .cx-tab.on { background: var(--cw-soft); color: var(--cw-primary); font-weight: 600; box-shadow: inset 3px 0 0 var(--cw-primary); }
+        .cx-tab kbd { margin-left: auto; font: 500 .68rem 'Inter'; color: var(--cw-mut); border: 1px solid var(--cw-line); border-radius: 5px; padding: 1px 6px; background: #fff; }
+        .cx-tab.search { border: 1px solid var(--cw-line); background: var(--cw-bg); margin-bottom: 6px; }
+        .collapsed-nav .cx-nav-label, .collapsed-nav .lbl, .collapsed-nav .brand-name, .collapsed-nav kbd, .collapsed-nav .user-email-short { display: none; }
+        .collapsed-nav .cx-tab, .collapsed-nav .user-menu-btn { justify-content: center; padding-left: 0; padding-right: 0; }
+
+        .cx-nav-bottom { margin-top: auto; position: relative; padding-top: 10px; border-top: 1px solid var(--cw-line); }
+        .user-menu-btn { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: none; padding: .5rem; border-radius: 10px; cursor: pointer; color: var(--cw-ink); }
+        .user-menu-btn:hover, .user-menu-btn.open, .user-menu-btn.cur { background: var(--cw-soft); }
+        .avatar-dot { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #4c5fd7, #8a97f0); color: #fff; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .user-email-short { font-size: .82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-menu { position: absolute; bottom: calc(100% - 4px); left: 0; width: 240px; background: #fff; border: 1px solid var(--cw-line); border-radius: 12px; box-shadow: 0 20px 40px -16px rgba(20,23,43,.3); padding: 6px; z-index: 70; }
+        .user-menu-header { padding: .6rem .7rem; font-size: .78rem; color: var(--cw-mut); border-bottom: 1px solid var(--cw-line); margin-bottom: 4px; word-break: break-all; }
+        .user-menu-item { display: block; width: 100%; text-align: left; background: none; border: none; padding: .55rem .7rem; border-radius: 8px; font-size: .86rem; color: var(--cw-ink); cursor: pointer; text-decoration: none; }
+        .user-menu-item:hover { background: var(--cw-soft); }
+        .user-menu-item.danger { color: var(--cw-bad); border: none; }
+        .user-menu-item.danger:hover { background: var(--cw-bad-bg); }
+
+        /* ---- центр ---- */
+        .cx-main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+        .cx-pane { display: none; flex: 1; min-height: 0; overflow-y: auto; }
+        .cx-pane.on { display: block; }
+        #cx-pane-crm.on { display: flex; flex-direction: column; }
+        .container { max-width: 1180px; margin: 0 auto; padding: 28px 32px 24px; }
+        .page-h { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 20px; }
+        .page-h h1 { font-size: 1.6rem; font-weight: 700; }
+        .subtitle { color: var(--cw-mut); margin-top: 4px; max-width: 560px; line-height: 1.5; }
+        .page-h-actions { display: flex; align-items: center; gap: 12px; }
+        .quota { font-size: .8rem; color: var(--cw-mut); background: #fff; border: 1px solid var(--cw-line); border-radius: 20px; padding: 4px 12px; }
+        .error, .success { padding: .75rem 1rem; border-radius: 10px; margin-bottom: 16px; font-size: .88rem; }
+        .error { background: var(--cw-bad-bg); color: var(--cw-bad); }
+        .success { background: var(--cw-ok-bg); color: var(--cw-ok); }
+
+        .card { background: #fff; border: 1px solid var(--cw-line); border-radius: var(--r); box-shadow: var(--shadow); }
+        .add-wrap { position: relative; }
+        .add-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 200px; background: #fff; border: 1px solid var(--cw-line); border-radius: 12px; padding: 6px; box-shadow: 0 20px 40px -16px rgba(20,23,43,.3); z-index: 40; }
+        .add-menu a { display: flex; align-items: center; gap: 10px; padding: .55rem .7rem; border-radius: 8px; color: var(--cw-ink); text-decoration: none; font-size: .88rem; }
+        .add-menu a:hover { background: var(--cw-soft); color: var(--cw-primary); }
+        .plat-icon { width: 20px; height: 20px; display: flex; }
+        .plat-icon svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* ---- акаунти: список + робочий простір ---- */
+        .acc-layout { display: grid; grid-template-columns: 320px minmax(0,1fr); gap: 20px; align-items: start; }
+        .acc-list { padding: 14px; position: sticky; top: 0; }
+        .search-row { margin-bottom: 10px; }
+        #clientTableBody { display: flex; flex-direction: column; gap: 4px; max-height: 62vh; overflow-y: auto; }
+        .client-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: .6rem .7rem; border-radius: 10px; border: 1px solid transparent; cursor: pointer; transition: background .15s, border-color .15s; }
+        .client-row:hover { background: var(--cw-bg); }
+        .client-row.selected { background: var(--cw-soft); border-color: rgba(76,95,215,.35); }
+        .account-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .account-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: var(--cw-soft); }
+        .account-avatar.ph { display: flex; align-items: center; justify-content: center; color: var(--cw-primary); font-weight: 600; }
+        .account-info { display: flex; flex-direction: column; min-width: 0; }
+        .account-name { font-weight: 600; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .account-id { font-size: .72rem; color: var(--cw-mut); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px; }
+        .account-platform { font-size: .7rem; text-transform: capitalize; color: var(--cw-mut); }
+        .client-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+        .empty-state { text-align: center; color: var(--cw-mut); padding: 2rem 1rem; line-height: 1.6; }
+        .status { display: inline-flex; align-items: center; gap: 5px; font-size: .72rem; font-weight: 600; padding: 2px 9px; border-radius: 20px; white-space: nowrap; }
+        .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .status.connected { color: var(--cw-ok); background: var(--cw-ok-bg); }
+        .status.disconnected { color: var(--cw-warn); background: var(--cw-warn-bg); }
+        .status.neutral { color: var(--cw-mut); background: #eff1f8; }
+
+        .ws-empty { padding: 4rem 2rem; text-align: center; color: var(--cw-mut); }
+        .ws-empty .ico { width: 54px; height: 54px; border-radius: 16px; background: var(--cw-soft); color: var(--cw-primary); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+        .ws-empty h3 { color: var(--cw-ink); margin-bottom: 6px; }
+        .workspace-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 22px; border-bottom: 1px solid var(--cw-line); }
+        .ws-id { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .ws-id .account-avatar { width: 44px; height: 44px; }
+        .workspace-header h2 { font-size: 1.1rem; }
+        .workspace-sub { font-size: .76rem; color: var(--cw-mut); }
+        .ws-tabs { display: flex; gap: 4px; padding: 0 16px; border-bottom: 1px solid var(--cw-line); }
+        .ws-tab { background: none; border: none; padding: .85rem 1rem; font-weight: 500; color: var(--cw-mut); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+        .ws-tab:hover { color: var(--cw-primary); }
+        .ws-tab.on { color: var(--cw-primary); border-color: var(--cw-primary); font-weight: 600; }
+        .ws-panel { display: none; padding: 22px; }
+        .ws-panel.on { display: block; }
+        .ws-panel > h3 { font-size: 1rem; margin-bottom: 4px; }
+        .ws-hint { color: var(--cw-mut); margin-bottom: 14px; line-height: 1.5; }
+        #rulesText { min-height: 200px; }
+        .reminders { margin: 14px 0; border: 1px dashed var(--cw-line); border-radius: 10px; padding: .6rem .9rem; }
+        .reminders summary { cursor: pointer; font-weight: 500; color: var(--cw-primary); }
+        .reminders input { margin-top: 8px; }
+        .panel-actions, .field-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 16px; }
+        .panel-actions { justify-content: flex-end; }
+        .field-head, .field-row { display: grid; grid-template-columns: 58px 130px 1fr 120px 86px 32px; gap: 8px; align-items: center; }
+        .field-head { font-size: .7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--cw-mut); font-weight: 600; padding: 0 2px 6px; }
+        .field-row { margin-bottom: 8px; }
+        .field-row label { display: flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--cw-mut); }
+        .field-row button { background: none; border: none; font-size: 1.3rem; color: var(--cw-mut); cursor: pointer; border-radius: 8px; height: 32px; }
+        .field-row button:hover { background: var(--cw-bad-bg); color: var(--cw-bad); }
+        .field-order { display: flex; gap: 2px; }
+        .field-row .field-order button { font-size: .8rem; width: 26px; height: 32px; padding: 0; border: 1px solid var(--cw-line); background: #fff; }
+        .field-row .field-order button:hover:not(:disabled) { background: var(--cw-soft); color: var(--cw-primary); border-color: var(--cw-primary); }
+        .field-row .field-order button:disabled { opacity: .3; cursor: default; }
+        .integ { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid var(--cw-line); border-radius: 12px; margin-bottom: 10px; }
+        .integ.click { cursor: pointer; } .integ.click:hover { border-color: rgba(76,95,215,.4); }
+        .integ .ico { width: 40px; height: 40px; border-radius: 10px; background: var(--cw-soft); color: var(--cw-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .integ-body { flex: 1; min-width: 0; } .integ-body b { display: block; } .catalog-desc { color: var(--cw-mut); font-size: .82rem; }
+        #integrationDetail { background: var(--cw-bg); border: 1px solid var(--cw-line); border-radius: 12px; padding: 14px 16px; }
+        #googleConnUI { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+        #googleConnUI a { color: var(--cw-primary); font-weight: 600; text-decoration: none; }
+        .hint { color: var(--cw-mut); } .inline-form { display: inline-flex; }
+        .cx-foot { text-align: center; padding: 1.5rem; color: rgba(20,23,43,.45); font-size: .78rem; }
+
+        /* ---- CRM (inbox / clients / table / analytics) ---- */
+        .cx-pad { display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 24px 32px; gap: 16px; }
+        .cx-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .cx-top h2 { font-size: 1.4rem; }
+        .cx-acc-select { width: 280px; }
+        #cx-view { flex: 1; min-height: 0; position: relative; overflow: auto; }
+        .cx-card { background: #fff; border: 1px solid var(--cw-line); border-radius: var(--r); box-shadow: var(--shadow); }
+        .cx-empty { color: var(--cw-mut); text-align: center; padding: 3rem 1rem; }
+        .cx-mut { color: var(--cw-mut); font-size: .75rem; }
+        .cx-split { position: absolute; inset: 0; display: grid; grid-template-columns: 340px minmax(0,1fr); gap: 16px; }
+        .cx-list { overflow-y: auto; padding: 8px; }
+        .cx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: .7rem .8rem; border-radius: 10px; cursor: pointer; }
+        .cx-row:hover { background: var(--cw-bg); }
+        .cx-row.sel { background: var(--cw-soft); }
+        .cx-row .cx-mut { margin-left: auto; }
+        .cx-thread { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; overflow-y: auto; color: var(--cw-mut); }
+        .cx-th-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .cx-th-h h3 { color: var(--cw-ink); font-size: 1.05rem; }
+        .cx-th-h select { width: 150px; }
+        .cx-th-h h3 { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cx-back { display: none; width: 34px; height: 34px; flex-shrink: 0; align-items: center; justify-content: center; border: 1px solid var(--cw-line); background: #fff; border-radius: 8px; color: var(--cw-ink); cursor: pointer; }
+        .cx-back:hover { border-color: var(--cw-primary); color: var(--cw-primary); }
+        .cx-rec { display: flex; flex-wrap: wrap; gap: 6px 18px; background: var(--cw-bg); border-radius: 10px; padding: .7rem .9rem; color: var(--cw-ink); font-size: .84rem; }
+        #cx-msgs { flex: 1; min-height: 160px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px; background: #fafbff; border-radius: 12px; }
+        .cx-bub { max-width: 78%; padding: .6rem .9rem; border-radius: 16px; line-height: 1.45; word-wrap: break-word; color: var(--cw-ink); background: #eef0f7; align-self: flex-start; border-bottom-left-radius: 5px; white-space: pre-wrap; }
+        .cx-bub.out { align-self: flex-end; background: linear-gradient(135deg, #4c5fd7, #3f50c4); color: #fff; border-radius: 16px 16px 5px 16px; }
+        .cx-notes { display: flex; gap: 10px; align-items: flex-end; } .cx-notes textarea { flex: 1; }
+
+        .cx-pill { display: inline-block; font-size: .7rem; font-weight: 600; padding: 2px 9px; border-radius: 20px; background: var(--cw-soft); color: var(--cw-primary); }
+        .cx-st-talking { background: var(--cw-warn-bg); color: var(--cw-warn); }
+        .cx-st-qualified { background: #e2f3ff; color: #0a6aa1; }
+        .cx-st-won { background: var(--cw-ok-bg); color: var(--cw-ok); }
+        .cx-st-lost { background: #eff1f8; color: #6b7089; }
+        .cx-won-badge { background: var(--cw-ok); color: #fff; font-size: .68rem; padding: 2px 8px; border-radius: 20px; }
+
+        .cx-t { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border: 1px solid var(--cw-line); border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow); }
+        .cx-t th { text-align: left; font-size: .7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--cw-mut); background: #fafbff; padding: .7rem 1rem; border-bottom: 1px solid var(--cw-line); }
+        .cx-t td { padding: .8rem 1rem; border-bottom: 1px solid var(--cw-line); vertical-align: top; font-size: .86rem; }
+        .cx-t tr:last-child td { border-bottom: none; }
+        .cx-cl { cursor: pointer; } .cx-cl:hover td { background: var(--cw-bg); }
+
+        .cx-tview { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 12px; }
+        .cx-tbar { display: flex; align-items: center; gap: 12px; } .cx-tbar b { flex: 1; font-size: 1.05rem; }
+        #cx-sheet { flex: 1; min-height: 0; background: #fff; border: 1px solid var(--cw-line); border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow); }
+        .cx-tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 14px; margin-top: 14px; }
+        .cx-tbl-card { background: #fff; border: 1px solid var(--cw-line); border-radius: var(--r); padding: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: border-color .15s, background .15s; }
+        .cx-tbl-card:hover { border-color: rgba(76,95,215,.5); background: #fafbff; }
+        .cx-tbl-card span { font-size: .7rem; background: var(--cw-soft); color: var(--cw-primary); border-radius: 20px; padding: 2px 8px; font-weight: 600; }
+
+        #cx-kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        .cx-kpi { background: #fff; border: 1px solid var(--cw-line); border-radius: var(--r); padding: 1.2rem 1.4rem; box-shadow: var(--shadow); }
+        .cx-kpi b { display: block; font: 700 2rem 'Poppins'; color: var(--cw-primary); } .cx-kpi span { color: var(--cw-mut); font-size: .82rem; }
+        #cx-c3 { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+        #cx-c1:empty, #cx-c2:empty { display: none; }
+        #cx-audit { background: #fff; border: 1px solid var(--cw-line); border-radius: var(--r); padding: 6px 16px; }
+        #cx-audit:before { content: 'Activity log'; display: block; font: 600 .95rem 'Poppins'; padding: 12px 0 6px; }
+        .cx-audit-row { padding: .55rem 0; border-top: 1px solid var(--cw-line); font-size: .84rem; color: var(--cw-mut); }
+
+        /* ---- Analytics: клікабельні плитки + графік ---- */
+        .cx-kpi-btn { cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .1s; }
+        .cx-kpi-btn:hover { border-color: rgba(76,95,215,.5); }
+        .cx-kpi-btn:active { transform: scale(.99); }
+        .cx-kpi-btn.active { border-color: var(--cw-primary); box-shadow: 0 0 0 3px rgba(76,95,215,.15); }
+        #cx-c3 .cx-pill { cursor: pointer; transition: transform .1s, box-shadow .15s; }
+        #cx-c3 .cx-pill:hover { transform: translateY(-1px); box-shadow: 0 2px 8px -4px rgba(20,23,43,.3); }
+        .cx-chart-card {
+            background: #fff; border: 1px solid var(--cw-line); border-radius: var(--r);
+            padding: 14px 16px 8px; margin-top: 16px; box-shadow: var(--shadow);
+            animation: cx-chart-in .18s ease;
+        }
+        @keyframes cx-chart-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+        .cx-chart-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; gap: 10px; }
+        .cx-chart-h b { font: 600 .95rem 'Poppins'; }
+        #cx-detail:empty { display: none; }
+
+        /* ---- Assti ---- */
+        .cx-asst { background: #fff; border-left: 1px solid var(--cw-line); display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+        .cx-asst-h { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 12px; }
+        .cx-asst-h b { display: flex; align-items: center; gap: 8px; font: 600 1rem 'Poppins'; }
+        .cx-asst-h b .sp { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, #4c5fd7, #8a97f0); color: #fff; display: flex; align-items: center; justify-content: center; }
+        .cx-asst-toggle { background: none; border: none; color: var(--cw-mut); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .cx-asst-toggle:hover { background: var(--cw-soft); color: var(--cw-primary); }
+        .cx-asst-toggle svg { width: 16px; height: 16px; transition: transform .25s ease; }
+        .collapsed-asst .cx-asst-toggle svg { transform: rotate(180deg); }
+        .collapsed-asst .cx-asst-body, .collapsed-asst .cx-asst-h b { display: none; }
+        .collapsed-asst .cx-asst-h { justify-content: center; padding: 16px 0; }
+        .cx-asst-body { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; padding: 0 16px 16px; }
+        .cx-seg { display: flex; gap: 4px; background: var(--cw-bg); padding: 3px; border-radius: 10px; }
+        .cx-seg button { flex: 1; border: none; background: none; padding: .4rem; border-radius: 8px; font-size: .78rem; font-weight: 500; color: var(--cw-mut); cursor: pointer; }
+        .cx-seg button.on { background: #fff; color: var(--cw-primary); font-weight: 600; box-shadow: 0 1px 3px rgba(20,23,43,.1); }
+        #cx-chat { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px; background: #fafbff; border-radius: 12px; }
+        .cx-m { max-width: 88%; padding: .6rem .85rem; border-radius: 14px; line-height: 1.45; font-size: .88rem; white-space: pre-wrap; word-wrap: break-word; }
+        .cx-m.a { background: #eef0f7; align-self: flex-start; border-bottom-left-radius: 4px; white-space: normal; max-width: 100%; min-width: 0; overflow-wrap: anywhere; }
+        .cx-m.a > :first-child { margin-top: 0; } .cx-m.a > :last-child { margin-bottom: 0; }
+        .cx-m.a p { margin: 0 0 .6em; }
+        .cx-m.a h1, .cx-m.a h2, .cx-m.a h3, .cx-m.a h4 { font-family: 'Poppins', 'Inter', sans-serif; line-height: 1.25; margin: .9em 0 .35em; }
+        .cx-m.a h1 { font-size: 1.1rem; } .cx-m.a h2 { font-size: 1.02rem; } .cx-m.a h3, .cx-m.a h4 { font-size: .94rem; }
+        .cx-m.a strong { font-weight: 600; } .cx-m.a del { opacity: .6; }
+        .cx-m.a ul, .cx-m.a ol { margin: 0 0 .6em; padding-left: 1.3em; } .cx-m.a li { margin: .15em 0; padding-left: .1em; }
+        .cx-m.a li::marker { color: var(--cw-primary); font-weight: 600; }
+        .cx-m.a li > ul, .cx-m.a li > ol { margin: .2em 0 0; }
+        .cx-m.a a { color: var(--cw-primary); text-decoration: underline; text-underline-offset: 2px; }
+        .cx-m.a code { font-family: 'SF Mono', Menlo, Consolas, monospace; font-size: .84em; background: #fff; border: 1px solid var(--cw-line); color: var(--cw-primary-dark); padding: .06em .38em; border-radius: 6px; }
+        .cx-m.a blockquote { border-left: 3px solid var(--cw-primary); margin: 0 0 .6em; padding: .1em 0 .1em .75em; color: rgba(20,23,43,.72); }
+        .cx-m.a hr { border: none; border-top: 1px solid var(--cw-line); margin: .8em 0; }
+        .cx-tblw { overflow-x: auto; margin: 0 0 .6em; } .cx-m.a table { border-collapse: collapse; font-size: .82rem; }
+        .cx-m.a th, .cx-m.a td { border: 1px solid var(--cw-line); padding: .3em .65em; text-align: left; } .cx-m.a th { background: #fff; font-weight: 600; }
+        .cx-code { margin: .3em 0 .7em; border-radius: 10px; overflow: hidden; background: #14172b; color: #e8ebf8; }
+        .cx-code-h { display: flex; align-items: center; justify-content: space-between; padding: .3rem .4rem .3rem .85rem; background: #1d2140; font-size: .72rem; color: rgba(232,235,248,.6); }
+        .cx-copy { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; color: inherit; cursor: pointer; font: inherit; padding: .25rem .5rem; border-radius: 6px; }
+        .cx-copy:hover { background: rgba(255,255,255,.1); color: #fff; } .cx-copy.ok { color: #6ee7a0; }
+        .cx-copy svg { width: 14px; height: 14px; }
+        .cx-code pre { margin: 0; padding: .8rem 1rem; overflow-x: auto; }
+        .cx-m.a .cx-code code { background: none; border: none; padding: 0; color: inherit; font-size: .8rem; line-height: 1.6; white-space: pre; }
+        .tk-c { color: #7d86b3; font-style: italic; } .tk-s { color: #9be3a6; } .tk-n { color: #f5b37f; } .tk-k { color: #a5b4ff; font-weight: 500; }
+        .cx-m.u { background: linear-gradient(135deg, #4c5fd7, #3f50c4); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .cx-act { border: 1px solid rgba(76,95,215,.35); background: var(--cw-soft); border-radius: 12px; padding: .8rem; font-size: .85rem; display: flex; flex-direction: column; gap: 8px; }
+        .cx-act .bt { display: flex; gap: 8px; } .cx-act .bt button { flex: 1; padding: .4rem; border-radius: 8px; border: 1px solid var(--cw-line); background: #fff; cursor: pointer; font-weight: 600; }
+        .cx-act .bt [data-ok] { background: var(--cw-primary); color: #fff; border-color: var(--cw-primary); }
+        .cx-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .cx-chips button { background: #fff; border: 1px solid var(--cw-line); border-radius: 20px; padding: .3rem .75rem; font-size: .76rem; color: var(--cw-primary); cursor: pointer; }
+        .cx-chips button:hover { background: var(--cw-soft); }
+        #cx-f { display: flex; gap: 8px; }
+        #cx-send { width: 42px; padding: 0; flex-shrink: 0; } #cx-send svg { width: 18px; height: 18px; }
+        #cx-asst-fab { display: none; }
+
+        /* ---- пошук, тост, модалки ---- */
+        #cx-srch { position: fixed; inset: 0; background: rgba(20,23,43,.45); backdrop-filter: blur(3px); display: none; align-items: flex-start; justify-content: center; padding: 14vh 1rem 0; z-index: 90; }
+        #cx-srch.on { display: flex; }
+        .cx-search-box { width: 100%; max-width: 680px; background: #fff; border-radius: 18px; box-shadow: 0 30px 70px -20px rgba(20,23,43,.5); overflow: hidden; }
+        .cx-search-head { display: flex; align-items: center; gap: 12px; padding: 4px 20px; border-bottom: 1px solid var(--cw-line); color: var(--cw-mut); }
+        .cx-search-head svg { width: 20px; height: 20px; }
+        .cx-search-head input { border: none; box-shadow: none !important; border-radius: 0; font-size: 1.05rem; padding: 1.05rem 0; }
+        .cx-search-hint { font-size: .7rem; color: var(--cw-mut); border: 1px solid var(--cw-line); border-radius: 6px; padding: 2px 8px; }
+        #cx-sr { min-height: 230px; max-height: 56vh; overflow-y: auto; padding: 10px; }
+        .cx-sr-g { font-size: .68rem; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 600; color: var(--cw-mut); padding: 10px 12px 6px; }
+        .cx-sr-row { display: flex; align-items: center; gap: 12px; padding: .75rem .9rem; border-radius: 10px; cursor: pointer; }
+        .cx-sr-row:hover { background: var(--cw-soft); }
+        .cx-sr-ico { width: 34px; height: 34px; border-radius: 10px; background: var(--cw-soft); color: var(--cw-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .cx-sr-row:hover .cx-sr-ico { background: #fff; }
+        .cx-sr-t { flex: 1; min-width: 0; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .cx-sr-d { font-size: .72rem; color: var(--cw-mut); white-space: nowrap; }
+        .cx-sr-empty { display: flex; align-items: center; justify-content: center; min-height: 210px; color: var(--cw-mut); }
+        .cx-toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--cw-ink); color: #fff; padding: 10px 18px; border-radius: 10px; display: none; z-index: 100; box-shadow: 0 10px 30px -10px rgba(20,23,43,.5); }
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(20,23,43,.45); backdrop-filter: blur(3px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+        .modal-backdrop.open { display: flex; }
+        .modal { background: #fff; border-radius: 16px; padding: 1.6rem; max-width: 460px; width: 100%; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 30px 70px -20px rgba(20,23,43,.5); max-height: 90vh; overflow-y: auto; }
+        .modal p { color: var(--cw-mut); line-height: 1.5; }
+        .modal form { display: flex; flex-direction: column; gap: 10px; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+        #cx-rl-res { color: var(--cw-mut); font-size: .84rem; }
+        .user-menu, .add-menu { display: none; } .user-menu.open, .add-menu.open { display: block; }
+
+        /* ===== CATALOG ===== */
+        .cat-grid { display: grid; grid-template-columns: 260px minmax(0,1fr); gap: 18px; align-items: start; }
+        @media (max-width: 900px) { .cat-grid { grid-template-columns: 1fr; } }
+        .cat-list { display: flex; flex-direction: column; gap: 6px; }
+        .cat-item { display: flex; align-items: center; gap: 8px; padding: .55rem .7rem; border-radius: 10px; border: 1px solid transparent; cursor: pointer; background: #fff; }
+        .cat-item:hover { border-color: var(--cw-line); }
+        .cat-item.on { border-color: var(--cw-primary); background: var(--cw-soft); }
+        .cat-item .cname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+        .cat-item .cmeta { font-size: .72rem; color: var(--cw-mut); white-space: nowrap; }
+        .cat-empty { padding: 18px; text-align: center; color: var(--cw-mut); font-size: .88rem; }
+
+        .item-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; padding: .55rem .7rem; border-bottom: 1px solid var(--cw-line); align-items: center; font-size: .88rem; }
+        .item-row:hover { background: #fafbff; }
+        .item-row:last-child { border-bottom: none; }
+        .item-row .iname { font-weight: 500; }
+        .item-row .imeta { font-size: .76rem; color: var(--cw-mut); margin-top: 2px; }
+        .item-row .iacts { display: flex; gap: 4px; }
+        .item-row .iacts button { background: none; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; color: var(--cw-mut); font-size: .82rem; }
+        .item-row .iacts button:hover { background: var(--cw-soft); color: var(--cw-primary); }
+        .item-row .iacts button.del:hover { background: var(--cw-bad-bg); color: var(--cw-bad); }
+
+        .pager { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 14px; font-size: .85rem; color: var(--cw-mut); }
+
+        .cat-modal-bd { position: fixed; inset: 0; background: rgba(20,23,43,.45); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 4vh 20px; overflow-y: auto; }
+        .cat-modal { background: #fff; border-radius: 16px; box-shadow: 0 30px 80px -20px rgba(20,23,43,.4); width: 100%; max-width: 640px; }
+        .cat-modal-h { padding: 18px 22px 12px; border-bottom: 1px solid var(--cw-line); display: flex; justify-content: space-between; align-items: center; }
+        .cat-modal-h h3 { font-size: 1.05rem; }
+        .cat-modal-h .x { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--cw-mut); line-height: 1; padding: 0 8px; }
+        .cat-modal-b { padding: 18px 22px; }
+        .cat-modal-b label { display: block; font-size: .8rem; color: var(--cw-mut); margin: 14px 0 6px; }
+        .cat-modal-b label:first-child { margin-top: 0; }
+        .cat-modal-f { padding: 12px 22px 18px; display: flex; gap: 10px; justify-content: flex-end; }
+        .cat-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media (max-width: 640px) { .cat-grid2 { grid-template-columns: 1fr; } }
+
+        .bind-panel { background: #fafbff; border: 1px solid var(--cw-line); border-radius: 12px; padding: 14px; }
+        .bind-panel h4 { font-size: .82rem; text-transform: uppercase; letter-spacing: 1px; color: var(--cw-mut); margin-bottom: 8px; font-weight: 600; }
+        .bind-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow: auto; }
+        .bind-item { display: flex; align-items: center; gap: 10px; padding: .4rem .55rem; border-radius: 8px; cursor: pointer; font-size: .86rem; }
+        .bind-item:hover { background: var(--cw-soft); }
+        .bind-item small { color: var(--cw-mut); font-size: .74rem; }
+
+        .sheet-note { background: var(--cw-warn-bg); border: 1px solid #f0d9a0; color: var(--cw-warn); padding: .6rem .8rem; border-radius: 10px; font-size: .82rem; margin-bottom: 12px; }
+
+        /* ---- адаптив ---- */
+        @media (max-width: 1180px) {
+            .cx-app { grid-template-columns: var(--nav-w) minmax(0,1fr); }
+            .cx-asst { position: fixed; top: 0; right: 0; bottom: 0; width: min(360px, 100vw); z-index: 80; box-shadow: -20px 0 40px -20px rgba(20,23,43,.3); }
+            .cx-app.collapsed-asst .cx-asst { display: none; }
+            .collapsed-asst #cx-asst-fab { display: flex; position: fixed; right: 20px; bottom: 20px; z-index: 60; width: 52px; height: 52px; border-radius: 50%; border: none; background: var(--cw-primary); color: #fff; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 12px 28px -8px rgba(76,95,215,.7); }
+            .cx-app { --nav-w: 72px; }
+            .cx-nav-label, .lbl, .brand-name, .cx-tab kbd, .user-email-short { display: none; }
+            .cx-tab, .user-menu-btn { justify-content: center; padding-left: 0; padding-right: 0; }
+            .cx-nav-toggle { display: none; } .cx-nav-top { justify-content: center; }
+            .user-menu { left: 8px; }
+        }
+        @media (max-width: 900px) {
+            .acc-layout { grid-template-columns: 1fr; } .acc-list { position: static; }
+            #clientTableBody { max-height: 280px; }
+            .cx-split { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr); }
+            .cx-split .cx-thread { display: none; }
+            .cx-row { padding: .9rem; }
+            #cx-pane-crm.thread-open .cx-split .cx-list { display: none; }
+            #cx-pane-crm.thread-open .cx-split .cx-thread { display: flex; }
+            #cx-pane-crm.thread-open .cx-top { display: none; }
+            #cx-pane-crm.thread-open .cx-pad { padding: 12px; }
+            .cx-app:has(#cx-pane-crm.thread-open) #cx-asst-fab { display: none !important; }
+            .cx-back { display: flex; } .cx-th-h select { width: 120px; }
+            #cx-kpi { grid-template-columns: 1fr; }
+            .field-head { display: none; } .field-row { grid-template-columns: 1fr 1fr; }
+            .container, .cx-pad { padding: 20px 16px; }
+        }
+        @media (max-width: 640px) {
+            .cx-app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+            .cx-main { grid-row: 1; grid-column: 1; height: auto; min-height: 0; overflow: hidden; }
+            .cx-nav {
+                grid-row: 2; grid-column: 1; position: relative; z-index: 70;
+                flex-direction: row; align-items: center;
+                padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
+                border-right: none; border-top: 1px solid var(--cw-line);
+                background: #fff;
+            }
+            .cx-tab { flex: 1; min-width: 0; }
+            .user-menu { left: auto; right: 0; bottom: calc(100% + 8px); }
+            .cx-nav-top, .cx-nav-label, .cx-tab.search { display: none; }
+            .cx-nav-bottom { margin: 0 0 0 auto; border: none; padding: 0; width: 56px; }
+            .cx-tab.on { box-shadow: none; }
+            .cx-acc-select { width: 100%; } .cx-top { flex-direction: column; align-items: stretch; }
+
+            .cx-app:has(#cx-pane-crm.thread-open) .cx-nav { display: none; }
+
+            #cx-kpi { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .cx-kpi { padding: .7rem .6rem; }
+            .cx-kpi b { font-size: 1.4rem; }
+
+            .cx-app.collapsed-asst #cx-asst-fab {
+                bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+                right: 16px; z-index: 65;
+            }
+        }
+    </style>
+</head>
+<body class="{{ 'cx-on' if logged_in else '' }}">
+
+{% if logged_in %}
+<div class="cx-app" id="cx-app">
+
+    <!-- ==================== LEFT NAV ==================== -->
+    <aside class="cx-nav">
+        <div class="cx-nav-top">
+            <div class="brand">
+                <span class="brand-mark"><img src="{{ url_for('template_file', filename='logo.svg') }}" alt="Spiklio"></span>
+                <span class="brand-name">Spiklio</span>
+            </div>
+            <button type="button" class="cx-nav-toggle" id="cx-nav-toggle" title="Collapse menu">
+                <svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+            </button>
+        </div>
+
+        <button type="button" class="cx-tab search" id="cx-so">
+            <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <span class="lbl">Search</span><kbd>Ctrl K</kbd>
+        </button>
+
+        <div class="cx-nav-label">Workspace</div>
+        <button type="button" class="cx-tab" data-t="inbox">
+            <svg class="i" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></svg>
+            <span class="lbl">Inbox</span>
+        </button>
+        <button type="button" class="cx-tab" data-t="clients">
+            <svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.4c2.2.7 3.5 2.6 3.5 5.6"/></svg>
+            <span class="lbl">Clients</span>
+        </button>
+        <button type="button" class="cx-tab" data-t="table">
+            <svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg>
+            <span class="lbl">Table</span>
+        </button>
+        <button type="button" class="cx-tab" data-t="catalog">
+            <svg class="i" viewBox="0 0 24 24"><path d="M3 6h18l-2 14H5z"/><path d="M8 6V4a4 4 0 0 1 8 0v2"/></svg>
+            <span class="lbl">Catalog</span>
+        </button>
+        <button type="button" class="cx-tab" data-t="assistant">
+            <svg class="i" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+            <span class="lbl">Analytics</span>
+        </button>
+
+
+        <div class="cx-nav-bottom">
+            <button type="button" class="user-menu-btn" id="userMenuBtn" onclick="toggleUserMenu(event)">
+                <span class="avatar-dot">{{ (user_email or '?')[:1] | upper }}</span>
+                <span class="user-email-short">{{ user_email }}</span>
+            </button>
+            <div class="user-menu" id="userMenu">
+                <div class="user-menu-header"><span class="email-full">{{ user_email }}</span></div>
+                <button type="button" class="user-menu-item" onclick="openSettingsPane()">Settings</button>
+                <button type="button" class="user-menu-item" onclick="openPasswordModal()">Change password</button>
+                <a href="{{ url_for('uadmin_logout') }}" class="user-menu-item">Sign out</a>
+                <button type="button" class="user-menu-item danger" onclick="openDeleteModal()">Delete account</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==================== MAIN ==================== -->
+    <main class="cx-main">
+
+        <!-- ===== ACCOUNTS & AI ===== -->
+        <section class="cx-pane" id="cx-pane-settings">
+            <div class="container">
+                <div class="page-h">
+                    <div>
+                        <h1>Your accounts</h1>
+                        <p class="subtitle">Connect a channel, then set the AI rules and the data it should collect for each one.</p>
+                    </div>
+                    <div class="page-h-actions">
+                        {% if limit and limit > 0 %}<span class="quota">{{ used }} / {{ limit }} accounts</span>{% endif %}
+                        <div class="add-wrap">
+                            <button type="button" class="btn-accent" onclick="toggleAddMenu(event)" {% if at_limit %}disabled title="Account limit reached"{% endif %}>+ Add account</button>
+                            <div class="add-menu" id="addMenu">
+                                {% for p in platforms %}
+                                    <a href="{{ url_for('uadmin_connect_platform', platform=p.id) }}">
+                                        <span class="plat-icon">{{ p.icon | safe }}</span>
+                                        <span>{{ p.label }}</span>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if error %}<div class="error">{{ error }}</div>{% endif %}
+                {% if success %}<div class="success">{{ success }}</div>{% endif %}
+
+                <div class="acc-layout">
+                    <!-- список акаунтів -->
+                    <div class="card acc-list">
+                        <div class="search-row">
+                            <input type="search" id="clientSearch" placeholder="Search accounts…" oninput="filterClients()">
+                        </div>
+                        <div id="clientTableBody">
+                            {% for acc in accounts %}
+                            <div class="client-row" id="client-row-{{ acc.id }}"
+                                 onclick='selectClient({{ acc.id|tojson }})'
+                                 data-search="{{ (acc.display_name or '') ~ ' ' ~ (acc.username or '') ~ ' ' ~ acc.id ~ ' ' ~ acc.platform }}">
+                                <div class="account-row">
+                                    {% if acc.profile_picture %}
+                                        <img src="{{ acc.profile_picture }}" class="account-avatar" alt="">
+                                    {% else %}
+                                        <span class="account-avatar ph">{{ (acc.display_name or acc.username or '?')[:1] | upper }}</span>
+                                    {% endif %}
+                                    <div class="account-info">
+                                        <span class="account-name">{{ acc.display_name or acc.username or acc.id }}</span>
+                                        <span class="account-platform">{{ acc.platform }}</span>
+                                    </div>
+                                </div>
+                                <div class="client-meta">
+                                    {% if acc.is_active %}<span class="status connected">Connected</span>
+                                    {% else %}<span class="status disconnected">Needs attention</span>{% endif %}
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="empty-state">No accounts yet.<br>Click <strong>+ Add account</strong> to connect your first one.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- порожній стан -->
+                    <div class="card ws-empty" id="workspaceEmpty">
+                        <div class="ico"><svg class="i" viewBox="0 0 24 24"><path d="M4 12h16M12 4v16"/></svg></div>
+                        <h3>Pick an account</h3>
+                        <p>Select one on the left to edit its rules, fields and integrations.</p>
+                    </div>
+
+                    <!-- робочий простір -->
+                    <div class="card" id="workspaceCard" style="display:none;">
+                        <div class="workspace-header">
+                            <div class="ws-id">
+                                <span id="workspaceAvatar"></span>
+                                <div>
+                                    <h2 id="workspaceTitle">—</h2>
+                                    <span class="workspace-sub"><span id="workspacePlat"></span> · <span id="workspaceSub">—</span></span>
+                                </div>
+                            </div>
+                            <form method="POST" action="{{ url_for('uadmin_disconnect_account') }}"
+                                  id="disconnectForm" style="display:none;"
+                                  onsubmit="return confirm('Disconnect this account? You can reconnect it later — your rules and collected data will be preserved.');">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <input type="hidden" name="account_id" id="disconnectAccountId">
+                                <button type="submit" class="danger small">Disconnect</button>
+                            </form>
+                        </div>
+
+                        <div class="ws-tabs">
+                            <button type="button" class="ws-tab on" data-w="rules">Rules</button>
+                            <button type="button" class="ws-tab" data-w="fields">Fields</button>
+                            <button type="button" class="ws-tab" data-w="integrations">Integrations</button>
+                        </div>
+
+                        <div class="ws-panel on" data-w="rules">
+                            <h3>AI rules</h3>
+                            <p class="ws-hint">Describe how the assistant should talk to people in this account: tone, what to offer, what to avoid.</p>
+                            <form method="POST" action="{{ url_for('uadmin_save') }}" id="rulesForm">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <input type="hidden" name="account_id" id="rulesAccountId">
+                                <textarea name="prompt" id="rulesText" required
+                                    placeholder="Describe how the assistant should handle conversations for this account..."></textarea>
+                                <details class="reminders" id="visionDetails">
+                                    <summary>Photo understanding (optional)</summary>
+                                    <p class="ws-hint" style="margin:8px 0">What the bot should notice when a client sends a photo. A cheap vision model writes a short description from this instruction, and the bot then replies to it using your AI rules. Leave empty for the default (a one-line neutral description: what is in the frame and its visible condition).</p>
+                                    <textarea name="vision_prompt" id="visionText" rows="4" maxlength="1500"
+                                        placeholder="e.g. These are photos of rooms to be cleaned. For each photo say the room type, roughly how messy it is (clean / lightly dirty / heavily dirty) and whether there is construction dust. One short sentence per photo."></textarea>
+                                </details>
+                                <details class="reminders">
+                                    <summary>Extra reminders (optional)</summary>
+                                    <input type="text" id="note1" name="note1" maxlength="100" placeholder="Reminder 1">
+                                    <input type="text" id="note2" name="note2" maxlength="100" placeholder="Reminder 2">
+                                    <input type="text" id="note3" name="note3" maxlength="100" placeholder="Reminder 3">
+                                </details>
+                                <div class="panel-actions"><button type="submit" class="btn-accent">Save rules</button></div>
+                            </form>
+                        </div>
+
+                        <div class="ws-panel" data-w="fields">
+                            <h3>Fields to collect</h3>
+                            <p class="ws-hint">The AI quietly gathers these from the conversation (name, phone, order…). Results go to the Table and Google Sheet. Use ▲ ▼ to change the order the bot asks in, then press Save fields.</p>
+                            <div class="field-head"><span>Order</span><span>ID</span><span>Description for AI</span><span>Type</span><span></span><span></span></div>
+                            <div id="fieldEditor"></div>
+                            <div id="fieldOrderHint" class="ws-hint" style="display:none;margin-top:6px"></div>
+                            <div class="field-actions">
+                                <button type="button" class="ghost small" onclick="addField()">+ Add field</button>
+                                <button type="button" class="btn-accent" onclick="saveIntegration()">Save fields</button>
+                            </div>
+                            <h3 style="margin-top:26px">How to collect</h3>
+                            <p class="ws-hint">Optional. Describe the order and style in plain words, e.g. "first the cleaning type, then house or apartment; ask bedrooms and bathrooms together; don't ask for notes". We compile it once; the bot then follows it. Without rules it asks one field at a time in list order. Save your fields first.</p>
+                            <textarea id="collectText" rows="4" placeholder="e.g. Ask name and phone at the end. Bedrooms and bathrooms together. Never ask for notes."></textarea>
+                            <div id="collectRes" class="ws-hint" style="margin-top:8px"></div>
+                            <div class="field-actions">
+                                <button type="button" class="ghost small" onclick="clearCollect()">Clear</button>
+                                <button type="button" class="btn-accent" id="collectBtn" onclick="compileCollect()">Compile &amp; save</button>
+                            </div>
+                        </div>
+
+                        <div class="ws-panel" data-w="integrations">
+                            <h3>Integrations</h3>
+                            <p class="ws-hint">Where the collected data is sent.</p>
+                            <div class="integ click" onclick="toggleIntegrationDetail()">
+                                <span class="ico"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/></svg></span>
+                                <div class="integ-body"><b>Google Sheet</b><span class="catalog-desc">Mirror collected data in real time.</span></div>
+                                <span id="googleStatusCell"><span class="status neutral">—</span></span>
+                                <button type="button" class="ghost small" id="googleToggleBtn" onclick="event.stopPropagation(); toggleIntegrationDetail();">Add</button>
+                            </div>
+                            <div id="integrationDetail" style="display:none; margin-bottom:10px;"><div id="googleConnUI"></div></div>
+                            <div class="integ">
+                                <span class="ico"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/></svg></span>
+                                <div class="integ-body"><b>Built-in Table</b><span class="catalog-desc">Stored inside Spiklio. Always active.</span></div>
+                                <span class="status connected">Always on</span>
+                                <button type="button" class="ghost small" onclick="setTab('table')">Open</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="cx-foot">&copy; 2026 Spiklio.</div>
+            </div>
+        </section>
+
+        <!-- ===== CRM (Inbox / Clients / Table / Catalog / Analytics) ===== -->
+        <section class="cx-pane" id="cx-pane-crm">
+            <div class="cx-pad">
+                <div class="cx-top">
+                    <h2 id="cx-title">Inbox</h2>
+                    <div class="cx-acc-select">
+                        <select id="cx-acc" aria-label="Account">
+                            <option value="">All accounts</option>
+                            {% for a in accounts %}<option value="{{ a.id }}">{{ a.platform }} · {{ a.display_name or a.username or a.id }}</option>{% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div id="cx-view"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==================== RIGHT ASSTI ==================== -->
+    <aside class="cx-asst" id="cx-asst">
+        <div class="cx-asst-h">
+            <b><span class="sp"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.2 6.3L21 12l-6.8 2.7L12 21l-2.2-6.3L3 12l6.8-2.7z"/></svg></span>Assti</b>
+            <button type="button" class="cx-asst-toggle" id="cx-asst-toggle" title="Collapse"><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        </div>
+        <div class="cx-asst-body">
+            <div class="cx-seg" id="cx-per">
+                <button type="button" data-d="1" class="on">Today (24h)</button>
+                <button type="button" data-d="3">3 days</button>
+            </div>
+            <div id="cx-chat"></div>
+            <div class="cx-chips" id="cx-chips"></div>
+            <form id="cx-f">
+                <input type="text" id="cx-q" autocomplete="off" placeholder="Ask Assti…" maxlength="1500">
+                <button type="submit" class="btn-accent" id="cx-send" aria-label="Send" title="Send"><svg class="i" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button>
+            </form>
+        </div>
+    </aside>
+    <button type="button" id="cx-asst-fab" title="Open Assti"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.2 6.3L21 12l-6.8 2.7L12 21l-2.2-6.3L3 12l6.8-2.7z"/></svg></button>
+</div>
+
+<div id="cx-srch">
+    <div class="cx-search-box">
+        <div class="cx-search-head">
+            <svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <input type="search" id="cx-sq" placeholder="Search clients, notes or messages…" autocomplete="off">
+            <span class="cx-search-hint">esc</span>
+        </div>
+        <div id="cx-sr"></div>
+    </div>
+</div>
+<div class="cx-toast" id="cx-toast"></div>
+
+<!-- ===== DELETE MODAL ===== -->
+<div class="modal-backdrop" id="deleteModal">
+    <div class="modal">
+        <h2>Delete account</h2>
+        <p>This will permanently delete your Spiklio account and all associated data. <strong>This action cannot be undone.</strong></p>
+        <form method="POST" action="{{ url_for('uadmin_delete_account') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="password" name="password" placeholder="Enter your password to confirm" required>
+            <div class="modal-actions">
+                <button type="button" class="ghost" onclick="closeDeleteModal()">Cancel</button>
+                <button type="submit" class="danger">Delete permanently</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== PASSWORD MODAL ===== -->
+<div class="modal-backdrop" id="passwordModal">
+    <div class="modal">
+        <h2>Change password</h2>
+        <form method="POST" action="{{ url_for('uadmin_change_password') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="password" name="current_password" placeholder="Current password" required>
+            <input type="password" name="new_password" placeholder="New password (min 8)" required minlength="8">
+            <input type="password" name="confirm_password" placeholder="Confirm new password" required minlength="8">
+            <div class="modal-actions">
+                <button type="button" class="ghost" onclick="closePasswordModal()">Cancel</button>
+                <button type="submit" class="btn-accent">Change password</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% if logged_in %}
+<script>
+    // ==================== ГЛОБАЛЬНІ ДАНІ (з сервера) ====================
+    var CLIENTS = [
+        {% for acc in accounts %}
+        {
+            id: {{ (acc.id | string) | tojson }},
+            display_name: {{ (acc.display_name | string if acc.display_name else '') | tojson }},
+            username: {{ (acc.username | string if acc.username else '') | tojson }},
+            platform: {{ (acc.platform | string if acc.platform else '') | tojson }},
+            is_active: {{ (acc.is_active | default(false)) | tojson }}
+        }{{ "," if not loop.last }}
+        {% endfor %}
+    ];
+    var PROMPTS = {{ prompts | tojson }};
+    var INTEGRATIONS = {{ integrations | tojson }};
+    var GOOGLE = {
+        {% for account_id, conn in google_sheets.items() %}
+        {{ (account_id | string) | tojson }}: {
+            spreadsheet_id: {{ (conn.spreadsheet_id | string if conn.spreadsheet_id else '') | tojson }},
+            sheet_title: {{ (conn.sheet_title | string if conn.sheet_title else '') | tojson }}
+        }{{ "," if not loop.last }}
+        {% endfor %}
+    };
+    var FIELD_TYPES = {{ field_types | tojson }};
+    var CSRF_TOKEN = {{ csrf_token | tojson }};
+    var USER_EMAIL = {{ user_email | tojson }};
+
+    var currentAccountId = null;
+    var fieldRows = [];
+    var STORAGE_KEY = 'chatwave_uadmin_selected_client';
+
+    // ==================== USER MENU ====================
+    function toggleUserMenu(ev) {
+        if (ev) ev.stopPropagation();
+        var btn = document.getElementById('userMenuBtn');
+        var menu = document.getElementById('userMenu');
+        menu.classList.toggle('open');
+        btn.classList.toggle('open');
+    }
+    document.addEventListener('click', function (ev) {
+        var menu = document.getElementById('userMenu');
+        var btn = document.getElementById('userMenuBtn');
+        if (!menu || !btn) return;
+        if (!menu.contains(ev.target) && !btn.contains(ev.target)) {
+            menu.classList.remove('open');
+            btn.classList.remove('open');
+        }
+    });
+
+    function openDeleteModal() {
+        document.getElementById('userMenu').classList.remove('open');
+        document.getElementById('userMenuBtn').classList.remove('open');
+        document.getElementById('deleteModal').classList.add('open');
+    }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); }
+    document.getElementById('deleteModal').addEventListener('click', function (ev) { if (ev.target === this) closeDeleteModal(); });
+
+    function openPasswordModal() {
+        document.getElementById('userMenu').classList.remove('open');
+        document.getElementById('userMenuBtn').classList.remove('open');
+        document.getElementById('passwordModal').classList.add('open');
+    }
+    function closePasswordModal() { document.getElementById('passwordModal').classList.remove('open'); }
+    document.getElementById('passwordModal').addEventListener('click', function (ev) { if (ev.target === this) closePasswordModal(); });
+    document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') { closeDeleteModal(); closePasswordModal(); } });
+
+    // ==================== ADD MENU ====================
+    function toggleAddMenu(ev) {
+        if (ev) ev.stopPropagation();
+        document.getElementById('addMenu').classList.toggle('open');
+    }
+    document.addEventListener('click', function (ev) {
+        var menu = document.getElementById('addMenu');
+        if (!menu) return;
+        if (!menu.contains(ev.target) && !ev.target.closest('.add-wrap')) menu.classList.remove('open');
+    });
+
+    // ==================== CLIENTS LIST ====================
+    function filterClients() {
+        var q = document.getElementById('clientSearch').value.trim().toLowerCase();
+        document.querySelectorAll('#clientTableBody .client-row').forEach(function (row) {
+            var hay = (row.getAttribute('data-search') || '').toLowerCase();
+            row.style.display = (!q || hay.indexOf(q) !== -1) ? '' : 'none';
+        });
+    }
+    function findAccount(id) {
+        for (var i = 0; i < CLIENTS.length; i++) if (CLIENTS[i].id === id) return CLIENTS[i];
+        return null;
+    }
+    function selectClient(id) {
+        currentAccountId = id;
+        try { localStorage.setItem(STORAGE_KEY, id); } catch (e) {}
+        document.querySelectorAll('.client-row').forEach(function (el) { el.classList.remove('selected'); });
+        var row = document.getElementById('client-row-' + id);
+        if (row) row.classList.add('selected');
+        var acc = findAccount(id);
+        document.getElementById('workspaceTitle').textContent = (acc && (acc.display_name || acc.username)) || id;
+        document.getElementById('workspaceSub').textContent = id;
+        renderGoogleStatus(id);
+        renderFields(id);
+        renderCollect(id);
+        renderRules(id);
+        document.getElementById('integrationDetail').style.display = 'none';
+        document.getElementById('disconnectAccountId').value = id;
+        document.getElementById('disconnectForm').style.display = 'block';
+        var av = document.getElementById('workspaceAvatar'); av.innerHTML = '';
+        var src = row && row.querySelector('.account-avatar');
+        if (src) av.appendChild(src.cloneNode(true));
+        document.getElementById('workspacePlat').textContent = (acc && acc.platform) || '';
+        document.getElementById('workspaceEmpty').style.display = 'none';
+        var card = document.getElementById('workspaceCard');
+        card.style.display = 'block';
+        if (window.innerWidth < 900 && document.readyState === 'complete') card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    function toggleIntegrationDetail() {
+        if (!currentAccountId) return;
+        var detail = document.getElementById('integrationDetail');
+        var isOpen = detail.style.display === 'block';
+        detail.style.display = isOpen ? 'none' : 'block';
+    }
+    function renderGoogleStatus(id) {
+        var conn = GOOGLE[id];
+        var cell = document.getElementById('googleStatusCell');
+        var btn = document.getElementById('googleToggleBtn');
+        if (conn && conn.spreadsheet_id) {
+            cell.innerHTML = '<span class="status connected">Connected</span>';
+            btn.textContent = 'Manage';
+        } else if (conn) {
+            cell.innerHTML = '<span class="status disconnected">No sheet picked</span>';
+            btn.textContent = 'Manage';
+        } else {
+            cell.innerHTML = '<span class="status neutral">Not connected</span>';
+            btn.textContent = 'Add';
+        }
+        var ui = document.getElementById('googleConnUI');
+        var html = '';
+        if (conn && conn.spreadsheet_id) {
+            html += '<a href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(conn.spreadsheet_id) + '/edit" target="_blank" rel="noopener">Open sheet ↗</a>';
+        } else if (conn) {
+            html += '<span class="hint">Google connected, no sheet picked yet.</span>';
+        } else {
+            html += '<span class="hint">You haven\'t connected a Google Sheet yet.</span>';
+        }
+        html += '<form method="GET" action="{{ url_for('uadmin_google_connect') }}" class="inline-form"><input type="hidden" name="account_id" value="' + escapeAttr(id) + '"><button type="submit" class="btn-accent small">' + (conn ? 'Reconnect Google' : 'Connect Google') + '</button></form>';
+        if (conn) {
+            html += '<form method="POST" action="{{ url_for('uadmin_google_disconnect') }}" class="inline-form"><input type="hidden" name="csrf_token" value="' + escapeAttr(CSRF_TOKEN) + '"><input type="hidden" name="account_id" value="' + escapeAttr(id) + '"><button type="submit" class="danger small">Disconnect</button></form>';
+        }
+        ui.innerHTML = html;
+    }
+
+    // ==================== FIELDS EDITOR ====================
+    function renderFieldEditor() {
+        var root = document.getElementById('fieldEditor');
+        root.innerHTML = '';
+        fieldRows.forEach(function (f, idx) {
+            var row = document.createElement('div');
+            row.className = 'field-row';
+            var idInput = document.createElement('input');
+            idInput.type = 'text'; idInput.placeholder = 'id (e.g. phone)'; idInput.value = f.id;
+            idInput.addEventListener('input', function () { fieldRows[idx].id = idInput.value.trim(); });
+            var labelInput = document.createElement('input');
+            labelInput.type = 'text'; labelInput.placeholder = 'Description for AI'; labelInput.value = f.label;
+            labelInput.addEventListener('input', function () { fieldRows[idx].label = labelInput.value; });
+            var select = document.createElement('select');
+            FIELD_TYPES.forEach(function (t) {
+                var opt = document.createElement('option');
+                opt.value = t; opt.textContent = t;
+                if (t === f.type) opt.selected = true;
+                select.appendChild(opt);
+            });
+            select.addEventListener('change', function () { fieldRows[idx].type = select.value; });
+            var reqLabel = document.createElement('label');
+            var reqBox = document.createElement('input'); reqBox.type = 'checkbox'; reqBox.checked = !!f.required;
+            reqBox.addEventListener('change', function () { fieldRows[idx].required = reqBox.checked; });
+            reqLabel.appendChild(reqBox); reqLabel.appendChild(document.createTextNode('required'));
+            var rm = document.createElement('button'); rm.type = 'button'; rm.innerHTML = '&times;';
+            rm.addEventListener('click', function () { fieldRows.splice(idx, 1); renderFieldEditor(); });
+            var ord = document.createElement('div'); ord.className = 'field-order';
+            var up = document.createElement('button'); up.type = 'button'; up.innerHTML = '&#9650;'; up.title = 'Move up';
+            up.disabled = idx === 0;
+            up.addEventListener('click', function () { moveField(idx, -1); });
+            var down = document.createElement('button'); down.type = 'button'; down.innerHTML = '&#9660;'; down.title = 'Move down';
+            down.disabled = idx === fieldRows.length - 1;
+            down.addEventListener('click', function () { moveField(idx, 1); });
+            ord.appendChild(up); ord.appendChild(down);
+            row.appendChild(ord); row.appendChild(idInput); row.appendChild(labelInput); row.appendChild(select); row.appendChild(reqLabel); row.appendChild(rm);
+            root.appendChild(row);
+        });
+        updateFieldOrderHint();
+    }
+    function moveField(idx, delta) {
+        var to = idx + delta;
+        if (to < 0 || to >= fieldRows.length) return;
+        var item = fieldRows.splice(idx, 1)[0];
+        fieldRows.splice(to, 0, item);
+        renderFieldEditor();
+    }
+    // Compiled "How to collect" rules with their own order override the list order.
+    function updateFieldOrderHint() {
+        var el = document.getElementById('fieldOrderHint');
+        if (!el) return;
+        var c = currentAccountId ? (INTEGRATIONS[currentAccountId] || {}).collect : null;
+        var hasOrder = c && c.rules && (c.rules.order || []).length;
+        if (hasOrder) {
+            el.style.display = '';
+            el.textContent = '⚠ The "How to collect" rules below name an order for some fields: those are asked first, and only the remaining fields follow the order of this list. Edit the rules text and press Compile & save, or press Clear, to use the list order for everything.';
+        } else {
+            el.style.display = 'none'; el.textContent = '';
+        }
+    }
+    function addField() { fieldRows.push({ id: '', label: '', type: 'text', required: false }); renderFieldEditor(); }
+    function renderFields(id) {
+        var integ = INTEGRATIONS[id] || {};
+        var existing = integ.fields || [];
+        fieldRows = existing.map(function (f) { return { id: f.id, label: f.label, type: f.type || 'text', required: !!f.required }; });
+        if (fieldRows.length === 0) fieldRows.push({ id: '', label: '', type: 'text', required: false });
+        renderFieldEditor();
+    }
+    function saveIntegration() {
+        if (!currentAccountId) return;
+        var clean = fieldRows.filter(function (f) { return (f.id || '').trim() !== '' && (f.label || '').trim() !== ''; });
+        if (clean.length === 0) { alert('Add at least one field with both an id and a description.'); return; }
+        var form = document.createElement('form'); form.method = 'POST'; form.action = '{{ url_for("uadmin_integrations_save") }}';
+        var c = document.createElement('input'); c.type = 'hidden'; c.name = 'csrf_token'; c.value = CSRF_TOKEN; form.appendChild(c);
+        var a = document.createElement('input'); a.type = 'hidden'; a.name = 'account_id'; a.value = currentAccountId; form.appendChild(a);
+        var f = document.createElement('input'); f.type = 'hidden'; f.name = 'fields_json'; f.value = JSON.stringify(clean); form.appendChild(f);
+        document.body.appendChild(form); form.submit();
+    }
+    // ==================== COLLECT RULES ====================
+    function collectSummary(c) {
+        if (!c || !c.rules) return 'No rules — one field at a time, in list order.';
+        var r = c.rules, parts = [];
+        parts.push('Mode: ' + r.mode + (r.mode === 'batch' ? ' (' + r.batch_size + ' per message)' : ''));
+        if ((r.order || []).length) parts.push('Order: ' + r.order.map(escapeHtml).join(' → '));
+        if ((r.groups || []).length) parts.push('Together: ' + r.groups.map(function (g) { return g.map(escapeHtml).join(' + '); }).join('; '));
+        if ((r.optional || []).length) parts.push('Not asked: ' + r.optional.map(escapeHtml).join(', '));
+        (r.notes || []).forEach(function (n) { parts.push('⚠ ' + escapeHtml(n)); });
+        return parts.join('<br>');
+    }
+    function renderCollect(id) {
+        var c = (INTEGRATIONS[id] || {}).collect || null;
+        document.getElementById('collectText').value = (c && c.source_text) || '';
+        document.getElementById('collectRes').innerHTML = collectSummary(c);
+    }
+    function collectPost(path, body) {
+        return fetch(path, { method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
+            body: JSON.stringify(body) }).then(function (r) { return r.json(); });
+    }
+    function compileCollect() {
+        if (!currentAccountId) return;
+        var text = document.getElementById('collectText').value.trim();
+        if (!text) { alert('Write how the bot should collect the fields.'); return; }
+        var btn = document.getElementById('collectBtn'); btn.disabled = true;
+        collectPost('/uadmin/collect/api/compile', { account_id: currentAccountId, source_text: text })
+            .then(function (r) {
+                btn.disabled = false;
+                if (!r.ok) { document.getElementById('collectRes').textContent = r.error || 'Failed'; return; }
+                INTEGRATIONS[currentAccountId] = INTEGRATIONS[currentAccountId] || { fields: [] };
+                INTEGRATIONS[currentAccountId].collect = r.collect;
+                document.getElementById('collectRes').innerHTML = collectSummary(r.collect);
+                updateFieldOrderHint();
+            }).catch(function () { btn.disabled = false; document.getElementById('collectRes').textContent = 'Server error'; });
+    }
+    function clearCollect() {
+        if (!currentAccountId) return;
+        collectPost('/uadmin/collect/api/delete', { account_id: currentAccountId }).then(function (r) {
+            if (!r.ok) return;
+            if (INTEGRATIONS[currentAccountId]) delete INTEGRATIONS[currentAccountId].collect;
+            renderCollect(currentAccountId);
+            updateFieldOrderHint();
+        });
+    }
+    function renderRules(id) {
+        var pr = PROMPTS[id] || {};
+        document.getElementById('rulesAccountId').value = id;
+        document.getElementById('rulesText').value = pr.prompt || '';
+        document.getElementById('visionText').value = pr.vision_prompt || '';
+        document.getElementById('visionDetails').open = !!pr.vision_prompt;
+        var notes = pr.notes || [];
+        document.getElementById('note1').value = notes[0] || '';
+        document.getElementById('note2').value = notes[1] || '';
+        document.getElementById('note3').value = notes[2] || '';
+    }
+    function escapeHtml(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    function escapeAttr(s) { return escapeHtml(s); }
+
+    (function restoreSelection() {
+        var saved = null;
+        try { saved = localStorage.getItem(STORAGE_KEY); } catch (e) {}
+        if (saved && findAccount(saved)) selectClient(saved);
+        else if (CLIENTS.length === 1) selectClient(CLIENTS[0].id);
+    })();
+
+    // ==================== WORKSPACE TABS ====================
+    function setWs(w) {
+        document.querySelectorAll('.ws-tab').forEach(function (b) { b.classList.toggle('on', b.dataset.w === w); });
+        document.querySelectorAll('.ws-panel').forEach(function (p) { p.classList.toggle('on', p.dataset.w === w); });
+    }
+    document.querySelectorAll('.ws-tab').forEach(function (b) { b.onclick = function () { setWs(b.dataset.w); }; });
+</script>
+
+<script src="{{ url_for('template_file', filename='sheet_grid.js') }}"></script>
+<script>
+(function () {
+    var CSRF = {{ csrf_token | tojson }};
+    var STATUS = ['new', 'talking', 'qualified', 'won', 'lost'];
+    var SUA = { new: 'New', talking: 'Talking', qualified: 'Qualified', won: 'Client', lost: 'Lost' };
+    var tab = 'settings', days = 1, hist = [], sel = null;
+    var showAllClients = false;
+
+    function g(id) { return document.getElementById('cx-' + id); }
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+    function fmt(iso) { var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+    function who(c) { return c.display_name || ('Client …' + String(c.conversation_id).slice(-4)); }
+    function pill(s) { return '<span class="cx-pill cx-st-' + esc(s) + '">' + esc(SUA[s] || s) + '</span>'; }
+    function wonBadge() { return '<span class="cx-won-badge">Won</span>'; }
+    function toast(t) { var e = g('toast'); e.textContent = t; e.style.display = 'block'; clearTimeout(toast.t); toast.t = setTimeout(function () { e.style.display = 'none'; }, 2500); }
+    function qs(o) { var a = []; for (var k in o) { if (o[k] !== '' && o[k] != null) a.push(k + '=' + encodeURIComponent(o[k])); } return a.length ? '?' + a.join('&') : ''; }
+    function accId() { return g('acc').value; }
+    function api(path, body) {
+        var h = {};
+        if (body) { h['Content-Type'] = 'application/json'; h['X-CSRF-Token'] = CSRF; }
+        return fetch(path, { method: body ? 'POST' : 'GET', headers: h, body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin' })
+            .then(function (r) { if (r.status === 401) { location.href = {{ url_for('uadmin_login') | tojson }}; throw 0; } return r.json(); });
+    }
+    // Catalog helper: same auth + CSRF, talks to /uadmin/catalog/*
+    function catApi(path, body) { return api(path, body); }
+
+    // ==================== MOBILE: список -> чат ====================
+    function crmPane() { return document.getElementById('cx-pane-crm'); }
+    function mOpen() {
+        var p = crmPane(); if (!p || p.classList.contains('thread-open')) return;
+        p.classList.add('thread-open');
+        if (window.innerWidth <= 900 && !(history.state && history.state.cxThread)) history.pushState({ cxThread: 1 }, '', location.href);
+    }
+    function mClose() {
+        var p = crmPane(); if (!p) return;
+        if (history.state && history.state.cxThread) history.back(); else p.classList.remove('thread-open');
+    }
+    window.addEventListener('popstate', function () { var p = crmPane(); if (p) p.classList.remove('thread-open'); });
+
+    // ==================== INBOX ====================
+    function inbox() {
+        g('view').innerHTML = '<div class="cx-split"><div class="cx-card cx-list" id="cx-ilist">Loading…</div><div class="cx-card cx-thread" id="cx-ithread">Pick a conversation.</div></div>';
+        api('/uadmin/crm/api/inbox' + qs({ account_id: accId() })).then(function (r) {
+            var el = g('ilist');
+            if (!r.ok || !r.items.length) { el.innerHTML = '<div class="cx-empty">No messages yet.</div>'; return; }
+            el.innerHTML = r.items.map(function (c, i) {
+                return '<div class="cx-row" data-i="' + i + '"><b>' + esc(who(c)) + '</b> ' + pill(c.status) + ' <span class="cx-mut">' + esc(fmt(c.created_at)) + '</span></div>';
+            }).join('');
+            el.onclick = function (e) { var row = e.target.closest('.cx-row'); if (row) openThread(r.items[+row.dataset.i], row); };
+            if (sel) {
+                for (var i = 0; i < r.items.length; i++) {
+                    if (r.items[i].conversation_id === sel.conversation_id && r.items[i].account_id === sel.account_id) { openThread(r.items[i], el.children[i]); break; }
+                }
+                sel = null;
+            }
+        });
+    }
+    function statusSel(cur) {
+        return '<select data-status-select>' + STATUS.map(function (s) { return '<option value="' + s + '"' + (s === cur ? ' selected' : '') + '>' + esc(SUA[s]) + '</option>'; }).join('') + '</select>';
+    }
+    function openThread(c, row) {
+        document.querySelectorAll('#cx-ilist .cx-row').forEach(function (x) { x.classList.remove('sel'); });
+        if (row) row.classList.add('sel');
+        api('/uadmin/crm/api/thread' + qs({ account_id: c.account_id, conversation_id: c.conversation_id })).then(function (r) {
+            if (!r.ok) return;
+            mOpen();
+            var ct = r.contact || { status: c.status, notes: '', is_won: 0 };
+            var rec = Object.keys(r.record || {}).map(function (k) { return '<div><b>' + esc(k) + ':</b> ' + esc(r.record[k]) + '</div>'; }).join('');
+            g('ithread').innerHTML = '<div class="cx-th-h"><button type="button" class="cx-back" id="cx-back" aria-label="Back to chats"><svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button><h3>' + esc(who(c)) + '</h3>' + statusSel(ct.status) + '</div>' +
+                (rec ? '<div class="cx-rec">' + rec + '</div>' : '') +
+                '<div id="cx-msgs">' + r.messages.map(function (m) { return '<div class="cx-bub ' + m.direction + '">' + esc(m.text) + '</div>'; }).join('') + '</div>' +
+                '<div class="cx-notes"><textarea id="cx-notes" rows="2" placeholder="Notes">' + esc(ct.notes || '') + '</textarea>' +
+                '<button type="button" id="cx-savenote" class="btn-accent">Save notes</button></div>';
+            var box = g('msgs'); box.scrollTop = box.scrollHeight;
+            g('back').onclick = mClose;
+            var statusEl = g('ithread').querySelector('[data-status-select]');
+            if (statusEl) statusEl.onchange = function () { upd(c, { status: this.value }, true); };
+            g('savenote').onclick = function () { upd(c, { notes: g('notes').value }, false); };
+        });
+    }
+    function upd(c, patch, reload) {
+        patch.account_id = c.account_id; patch.conversation_id = c.conversation_id;
+        api('/uadmin/crm/api/client/update', patch).then(function (r) { toast(r.ok ? 'Saved' : 'Failed'); if (r.ok && reload) { sel = c; render(); } });
+    }
+
+    // ==================== CLIENTS ====================
+    function clients() {
+        g('view').innerHTML = '<div id="cx-ctable">Loading…</div>';
+        var params = { account_id: accId() };
+        if (showAllClients) params.all = '1';
+        api('/uadmin/crm/api/clients' + qs(params)).then(function (r) {
+            var el = g('ctable');
+            if (!r.ok || !r.items.length) { el.innerHTML = '<div class="cx-empty">No clients yet.</div>'; return; }
+            el.innerHTML = '<table class="cx-t"><tr><th>Client</th><th>Status</th><th>Collected</th><th>Last</th></tr>' + r.items.map(function (c, i) {
+                var rec = Object.keys(c.record || {}).map(function (k) { return esc(k) + ': ' + esc(c.record[k]); }).join('<br>') || '—';
+                return '<tr class="cx-cl" data-i="' + i + '"><td><b>' + esc(who(c)) + '</b></td><td>' + pill(c.status) + '</td><td>' + rec + '</td><td>' + esc(fmt(c.last_at)) + '</td></tr>';
+            }).join('') + '</table>';
+            el.onclick = function (e) { var tr = e.target.closest('tr.cx-cl'); if (!tr) return; sel = r.items[+tr.dataset.i]; setTab('inbox'); };
+        });
+    }
+
+    // ==================== TABLE (multi-table + SheetGrid) ====================
+    var tableState = { tables: [], currentId: null, columns: [], rows: [], cells: {}, styles: {} };
+
+    function table() {
+        if (tableState.currentId) tableOpen(tableState.currentId);
+        else tableList();
+    }
+    function tableList() {
+        g('view').innerHTML = 'Loading…';
+        api('/uadmin/table/api/tables').then(function (r) {
+            if (!r.ok) { g('view').innerHTML = 'Failed.'; return; }
+            tableState.tables = r.tables || [];
+            renderTableList();
+        }).catch(function () { g('view').innerHTML = 'Failed.'; });
+    }
+    function renderTableList() {
+        var body = tableState.tables.length ? tableState.tables.map(function (t) {
+            return '<div class="cx-tbl-card" data-tid="' + esc(t.table_id) + '"><b>' + esc(t.name) + '</b>' + (t.is_default ? '<span>default</span>' : '') + '</div>';
+        }).join('') : '<div class="cx-empty">No tables yet.</div>';
+        g('view').innerHTML = '<div class="cx-tbar"><b>Your tables</b><button type="button" id="cx-imp-tbl" class="ghost">Import</button><button type="button" id="cx-new-tbl" class="btn-accent">+ New table</button></div><div class="cx-tgrid">' + body + '</div>';
+        document.getElementById('cx-imp-tbl').onclick = function () { location.href = '/uadmin/table/import'; };
+        document.getElementById('cx-new-tbl').onclick = function () {
+            var name = prompt('Table name:'); if (!name) return;
+            api('/uadmin/table/api/tables', { name: name }).then(function (r) { if (r.ok) { tableState.currentId = r.table.table_id; table(); } });
+        };
+        g('view').querySelectorAll('.cx-tbl-card').forEach(function (card) {
+            card.onclick = function () { tableState.currentId = this.dataset.tid; table(); };
+        });
+    }
+    function tableOpen(tid) {
+        g('view').innerHTML = 'Loading…';
+        api('/uadmin/table/api/snapshot' + qs({ table_id: tid })).then(function (r) {
+            if (!r.ok) { tableState.currentId = null; g('view').innerHTML = 'Failed.'; return; }
+            tableState.columns = r.columns || []; tableState.rows = r.rows || [];
+            tableState.cells = r.cells || {}; tableState.styles = r.styles || {};
+            renderTableOpen();
+        }).catch(function () { g('view').innerHTML = 'Failed.'; });
+    }
+    function renderTableOpen() {
+        var cur = tableState.tables.find(function (t) { return t.table_id === tableState.currentId; });
+        var tid = tableState.currentId;
+        g('view').innerHTML =
+            '<div class="cx-tview">' +
+            '<div class="cx-tbar"><button type="button" id="cx-back-tbl" class="ghost small">← All tables</button> <b>' + esc(cur ? cur.name : 'Table') + '</b> ' +
+            '<button type="button" id="cx-imp-btn" class="ghost small">Import</button>' +
+            '<button type="button" id="cx-rules-btn" class="btn-accent small">Table rules</button></div>' +
+            '<div id="cx-sheet"></div></div>';
+        document.getElementById('cx-back-tbl').onclick = function () { tableState.currentId = null; tableList(); };
+        document.getElementById('cx-rules-btn').onclick = function () { rulesOpen(tid); };
+        document.getElementById('cx-imp-btn').onclick = function () {
+            location.href = '/uadmin/table/import?table_id=' + encodeURIComponent(tid) + '&mode=append';
+        };
+        SheetGrid.mount(g('sheet'), {
+            tid: tid, api: api, toast: toast, esc: esc,
+            snap: { columns: tableState.columns, rows: tableState.rows, cells: tableState.cells, styles: tableState.styles }
+        });
+    }
+    function rulesOpen(tid) {
+        var bd = document.createElement('div');
+        bd.className = 'modal-backdrop open';
+        bd.innerHTML = '<div class="modal"><h2>Table rules</h2><div id="cx-rl-fields"></div>' +
+            '<textarea id="cx-rl-text" rows="6" placeholder="e.g. Name → column A, phone → B..."></textarea>' +
+            '<div id="cx-rl-res"></div>' +
+            '<div class="modal-actions"><button type="button" id="cx-rl-close" class="ghost">Close</button><button type="button" id="cx-rl-del" class="ghost">Clear</button><button type="button" id="cx-rl-save" class="btn-accent">Save</button></div></div>';
+        document.body.appendChild(bd);
+        function close() { document.body.removeChild(bd); }
+        function q(id) { return bd.querySelector('#cx-rl-' + id); }
+        bd.addEventListener('mousedown', function (e) { if (e.target === bd) close(); });
+        q('close').onclick = close;
+        function showRules(rules) {
+            if (!rules) { q('res').innerHTML = 'No rules yet.'; return; }
+            var cols = Object.keys(rules.columns || {});
+            q('res').innerHTML = cols.length ? 'Mapped: ' + cols.join(', ') : 'Nothing mapped.';
+        }
+        api('/uadmin/table/api/rules/get' + qs({ table_id: tid })).then(function (r) {
+            if (!r.ok) return;
+            if (r.rules && r.rules._source_text) q('text').value = r.rules._source_text;
+            showRules(r.rules);
+        });
+        q('save').onclick = function () {
+            var text = q('text').value.trim(); if (!text) return;
+            api('/uadmin/table/api/rules/compile', { table_id: tid, source_text: text }).then(function (r) {
+                if (r.ok) { showRules(r.rules); toast('Saved'); } else toast('Failed');
+            });
+        };
+        q('del').onclick = function () {
+            api('/uadmin/table/api/rules/delete', { table_id: tid }).then(function (r) { if (r.ok) { q('text').value = ''; showRules(null); } });
+        };
+    }
+
+    // ==================== CATALOG ====================
+    var CAT = { list: [], current: null, items: [], total: 0, offset: 0, limit: 30, q: '' };
+
+    function catalog() {
+        g('view').innerHTML = 'Loading catalogs…';
+        catApi('/uadmin/catalog/catalogs').then(function (r) {
+            if (!r.ok) { g('view').innerHTML = '<div class="cx-empty">Failed to load catalogs: ' + esc(r.error || 'unknown') + '</div>'; return; }
+            CAT.list = r.catalogs || [];
+            if (CAT.current && !CAT.list.find(function (c) { return c.id === CAT.current; })) CAT.current = null;
+            if (!CAT.current && CAT.list.length) CAT.current = CAT.list[0].id;
+            renderCatRoot();
+            if (CAT.current) catLoadItems(0);
+        }).catch(function (e) { if (e === 0) return; g('view').innerHTML = '<div class="cx-empty">Server error.</div>'; });
+    }
+
+    function renderCatRoot() {
+        g('view').innerHTML =
+            '<div class="cat-grid">' +
+              '<div>' +
+                '<div class="cx-card" style="padding:8px"><div class="cat-list" id="cx-cat-list"></div></div>' +
+                '<button type="button" class="ghost small" id="cx-cat-new" style="width:100%;margin-top:10px">New catalog</button>' +
+              '</div>' +
+              '<div>' +
+                '<div id="cx-cat-actions"></div>' +
+                '<div id="cx-cat-items"></div>' +
+                '<div id="cx-cat-bind" style="margin-top:16px"></div>' +
+              '</div>' +
+            '</div>';
+        document.getElementById('cx-cat-new').onclick = catCreate;
+        renderCatList();
+        renderCatItems();
+    }
+
+    function renderCatList() {
+        var host = document.getElementById('cx-cat-list');
+        if (!host) return;
+        host.innerHTML = CAT.list.length ? CAT.list.map(function (c) {
+            return '<div class="cat-item ' + (c.id === CAT.current ? 'on' : '') + '" data-id="' + esc(c.id) + '">' +
+                '<div class="cname">' + esc(c.name) + '</div><div class="cmeta">' + (c.n || 0) + '</div></div>';
+        }).join('') : '<div class="cat-empty">No catalogs yet.</div>';
+        host.onclick = function (e) {
+            var it = e.target.closest('.cat-item'); if (!it) return;
+            CAT.current = it.dataset.id; CAT.offset = 0; CAT.q = '';
+            renderCatList(); catLoadItems(0);
+        };
+    }
+
+    function catAction(a) {
+        var id = CAT.current;
+        var cur = CAT.list.find(function (c) { return c.id === id; });
+        if (!cur) return;
+        if (a === 'ren') {
+            var name = prompt('New name:', cur.name);
+            if (!name) return;
+            catApi('/uadmin/catalog/catalogs/rename', { catalog_id: id, name: name }).then(function (r) {
+                if (!r.ok) toast(r.error || 'Failed');
+                catalog();
+            });
+        } else if (a === 'def') {
+            catApi('/uadmin/catalog/catalogs/default', { catalog_id: id }).then(function (r) {
+                if (!r.ok) toast(r.error || 'Failed');
+                catalog();
+            });
+        } else if (a === 'del') {
+            if (!confirm('Delete this catalog and all its items? This cannot be undone.')) return;
+            catApi('/uadmin/catalog/catalogs/delete', { catalog_id: id }).then(function (r) {
+                if (!r.ok) { toast(r.error || 'Failed'); return; }
+                CAT.current = null; catalog();
+            });
+        }
+    }
+
+    function catCreate() {
+        var name = prompt('New catalog name:');
+        if (!name) return;
+        catApi('/uadmin/catalog/catalogs/create', { name: name }).then(function (r) {
+            if (!r.ok) { toast(r.error || 'Failed'); return; }
+            CAT.current = r.catalog.id; catalog();
+        });
+    }
+
+    function catLoadItems(offset) {
+        if (!CAT.current) { CAT.items = []; CAT.total = 0; renderCatItems(); return; }
+        var params = '?catalog_id=' + encodeURIComponent(CAT.current) + '&limit=' + CAT.limit + '&offset=' + (offset || 0) + '&q=' + encodeURIComponent(CAT.q || '');
+        catApi('/uadmin/catalog/items' + params).then(function (r) {
+            if (!r.ok) { toast(r.error || 'Failed'); return; }
+            CAT.items = r.items || []; CAT.total = r.total || 0; CAT.offset = offset || 0;
+            renderCatItems();
+        });
+    }
+
+    function formatPriceJs(it) {
+        var t = it.price_type, cur = it.currency ? ' ' + it.currency : '', unit = it.unit ? '/' + it.unit : '';
+        var f = function (n) { return Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0+$/, '').replace(/\.$/, ''); };
+        if (t === 'free') return 'free';
+        if (t === 'on_request' || it.price == null) return 'price on request';
+        if (t === 'from') return 'from ' + f(it.price) + cur + unit;
+        if (t === 'range' && it.price_max != null) return f(it.price) + '–' + f(it.price_max) + cur + unit;
+        return f(it.price) + cur + unit;
+    }
+
+    function renderCatItems() {
+        var host = document.getElementById('cx-cat-items');
+        if (!host) return;
+        var cur = CAT.list.find(function (c) { return c.id === CAT.current; });
+        var bar = document.getElementById('cx-cat-actions');
+        if (!cur) {
+            host.innerHTML = '<div class="cx-empty">' + (CAT.list.length ? 'Select a catalog.' : 'Create a catalog to get started.') + '</div>';
+            if (bar) bar.innerHTML = '';
+            var b2 = document.getElementById('cx-cat-bind'); if (b2) b2.innerHTML = '';
+            return;
+        }
+        if (bar) {
+            bar.innerHTML = '<div class="cx-tbar" style="margin-bottom:12px"><b>' + esc(cur.name) +
+                (cur.is_default ? ' <span class="cx-pill">default</span>' : '') + '</b>' +
+                '<button type="button" class="ghost small" data-a="ren">Rename</button>' +
+                (cur.is_default ? '' : '<button type="button" class="ghost small" data-a="def">Make default</button>') +
+                '<button type="button" class="danger small" data-a="del">Delete</button></div>';
+            bar.onclick = function (e) { var b = e.target.closest('button[data-a]'); if (b) catAction(b.dataset.a); };
+        }
+        var rows = CAT.items.map(function (it) {
+            var price = formatPriceJs(it);
+            var kind = it.kind && it.kind !== 'product' ? it.kind : '';
+            var meta = [it.category || '', kind, price].filter(Boolean).map(esc).join(' · ') +
+                (it.availability === 'out_of_stock' ? ' · <span style="color:var(--cw-bad)">out</span>' : '');
+            return '<div class="item-row" data-id="' + esc(it.id) + '">' +
+                '<div><div class="iname">' + esc(it.name) + '</div><div class="imeta">' + meta + '</div></div>' +
+                '<div class="iacts"><button type="button" data-a="edit">Edit</button><button type="button" data-a="del" class="del">Delete</button></div>' +
+                '</div>';
+        }).join('');
+        var list = CAT.items.length
+            ? '<div class="cx-card" style="margin-top:12px;overflow:hidden">' + rows + '</div>'
+            : '<div class="cat-empty">' + (CAT.q ? 'Nothing found.' : 'No items yet.') + '</div>';
+        var pager = CAT.total > CAT.limit ? '<div class="pager"><button type="button" class="ghost small" ' + (CAT.offset === 0 ? 'disabled' : '') + ' data-p="prev">Prev</button><span>' + (CAT.offset + 1) + '–' + Math.min(CAT.offset + CAT.limit, CAT.total) + ' of ' + CAT.total + '</span><button type="button" class="ghost small" ' + (CAT.offset + CAT.limit >= CAT.total ? 'disabled' : '') + ' data-p="next">Next</button></div>' : '';
+        host.innerHTML =
+            '<div style="display:flex;gap:10px">' +
+                '<input type="text" id="cx-cat-q" placeholder="Search items…" value="' + esc(CAT.q) + '" style="margin-bottom:0">' +
+                '<button type="button" class="ghost" id="cx-cat-import" title="Import from Google Sheet" style="flex:0 0 auto">Import</button>' +
+                '<button type="button" id="cx-cat-add" class="btn-accent" style="flex:0 0 auto">+ Item</button>' +
+            '</div>' + list + pager;
+        var q = document.getElementById('cx-cat-q');
+        var t;
+        q.oninput = function (e) { clearTimeout(t); var v = e.target.value; t = setTimeout(function () { CAT.q = v.trim(); catLoadItems(0); }, 300); };
+        document.getElementById('cx-cat-add').onclick = function () { catOpenItemModal(null); };
+        document.getElementById('cx-cat-import').onclick = catSheetImportModal;
+        host.querySelectorAll('button[data-p]').forEach(function (b) {
+            b.onclick = function () { catLoadItems(Math.max(0, CAT.offset + (b.dataset.p === 'next' ? CAT.limit : -CAT.limit))); };
+        });
+        host.querySelectorAll('.item-row').forEach(function (r) {
+            r.onclick = function (e) {
+                var id = r.dataset.id, a = e.target.closest('button') && e.target.closest('button').dataset.a;
+                if (a === 'edit') catOpenItemModal(CAT.items.find(function (x) { return x.id === id; }));
+                else if (a === 'del') {
+                    if (!confirm('Delete this item?')) return;
+                    catApi('/uadmin/catalog/item/delete', { catalog_id: CAT.current, item_id: id }).then(function (r2) {
+                        if (!r2.ok) toast(r2.error || 'Failed');
+                        catLoadItems(CAT.offset);
+                    });
+                }
+            };
+        });
+        renderCatBindings();
+    }
+
+    function catOpenItemModal(item) {
+        var isNew = !item, it = item || {};
+        var bd = document.createElement('div');
+        bd.className = 'cat-modal-bd';
+        bd.innerHTML =
+            '<div class="cat-modal">' +
+              '<div class="cat-modal-h"><h3>' + (isNew ? 'New item' : 'Edit item') + '</h3><button type="button" class="x">×</button></div>' +
+              '<div class="cat-modal-b">' +
+                '<label>Name *</label><input type="text" id="cx-m-name" value="' + esc(it.name || '') + '" maxlength="200">' +
+                '<div class="cat-grid2">' +
+                  '<div><label>Kind</label><select id="cx-m-kind">' + ['product','service','subscription','rental','course','event','package','other'].map(function (k) { return '<option value="' + k + '"' + (it.kind === k ? ' selected' : '') + '>' + k + '</option>'; }).join('') + '</select></div>' +
+                  '<div><label>Category</label><input type="text" id="cx-m-category" value="' + esc(it.category || '') + '" maxlength="120"></div>' +
+                '</div>' +
+                '<div class="cat-grid2">' +
+                  '<div><label>Price type</label><select id="cx-m-ptype">' + ['fixed','from','range','on_request','free'].map(function (t) { return '<option value="' + t + '"' + (it.price_type === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></div>' +
+                  '<div><label>Availability</label><select id="cx-m-avail">' + ['available','out_of_stock','preorder','by_request','unavailable'].map(function (t) { return '<option value="' + t + '"' + (it.availability === t ? ' selected' : '') + '>' + t + '</option>'; }).join('') + '</select></div>' +
+                '</div>' +
+                '<div class="cat-grid2">' +
+                  '<div><label>Price</label><input type="number" step="0.01" id="cx-m-price" value="' + (it.price != null ? it.price : '') + '"></div>' +
+                  '<div><label>Price max (range)</label><input type="number" step="0.01" id="cx-m-pmax" value="' + (it.price_max != null ? it.price_max : '') + '"></div>' +
+                '</div>' +
+                '<div class="cat-grid2">' +
+                  '<div><label>Currency</label><input type="text" id="cx-m-cur" value="' + esc(it.currency || 'UAH') + '" maxlength="8"></div>' +
+                  '<div><label>Unit</label><input type="text" id="cx-m-unit" value="' + esc(it.unit || '') + '" maxlength="30"></div>' +
+                '</div>' +
+                '<label>Description</label><textarea id="cx-m-desc" rows="3" maxlength="1500" style="margin-bottom:0">' + esc(it.description || '') + '</textarea>' +
+                '<label>URL</label><input type="text" id="cx-m-url" value="' + esc(it.url || '') + '" maxlength="500">' +
+                '<label>Tags (comma-separated)</label><input type="text" id="cx-m-tags" value="' + esc((it.tags || []).join(', ')) + '" maxlength="300">' +
+              '</div>' +
+              '<div class="cat-modal-f"><button type="button" class="ghost" id="cx-m-cancel">Cancel</button><button type="button" class="btn-accent" id="cx-m-save">' + (isNew ? 'Add' : 'Save') + '</button></div>' +
+            '</div>';
+        document.body.appendChild(bd);
+        function close() { bd.remove(); }
+        bd.querySelector('.x').onclick = close;
+        document.getElementById('cx-m-cancel').onclick = close;
+        bd.onclick = function (e) { if (e.target === bd) close(); };
+        document.getElementById('cx-m-save').onclick = function () {
+            var payload = {
+                name: document.getElementById('cx-m-name').value.trim(),
+                kind: document.getElementById('cx-m-kind').value,
+                category: document.getElementById('cx-m-category').value.trim(),
+                price_type: document.getElementById('cx-m-ptype').value,
+                availability: document.getElementById('cx-m-avail').value,
+                price: document.getElementById('cx-m-price').value,
+                price_max: document.getElementById('cx-m-pmax').value,
+                currency: document.getElementById('cx-m-cur').value.trim(),
+                unit: document.getElementById('cx-m-unit').value.trim(),
+                description: document.getElementById('cx-m-desc').value.trim(),
+                url: document.getElementById('cx-m-url').value.trim(),
+                tags: document.getElementById('cx-m-tags').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean)
+            };
+            if (!payload.name) { toast('Name is required'); return; }
+            catApi('/uadmin/catalog/item/save', { catalog_id: CAT.current, item_id: it.id || null, item: payload }).then(function (r) {
+                if (!r.ok) { toast(r.error || 'Failed'); return; }
+                close(); catLoadItems(isNew ? 0 : CAT.offset);
+                catApi('/uadmin/catalog/catalogs').then(function (rr) { if (rr.ok) { CAT.list = rr.catalogs || []; renderCatList(); } });
+            });
+        };
+    }
+
+    function catSheetImportModal() {
+        var connected = (CLIENTS || []).filter(function (a) { return GOOGLE[a.id] && GOOGLE[a.id].spreadsheet_id; });
+        var bd = document.createElement('div');
+        bd.className = 'cat-modal-bd';
+        bd.innerHTML =
+            '<div class="cat-modal">' +
+              '<div class="cat-modal-h"><h3>Import from Google Sheet</h3><button type="button" class="x">×</button></div>' +
+              '<div class="cat-modal-b">' +
+                '<div class="sheet-note">First row — headers (<b>name</b>, <b>price</b>, <b>category</b>…). If no headers — first column becomes the name.</div>' +
+                (connected.length === 0 ? '<div class="error">No connected Google Sheet found for your accounts. Connect one in Settings → Integrations.</div>' : '') +
+                '<label>Google Sheet</label>' +
+                '<select id="cx-imp-sheet">' + connected.map(function (a) { return '<option value="' + esc(a.id) + '">' + esc(a.display_name || a.username || a.id) + ' — ' + esc(GOOGLE[a.id].sheet_title || '') + '</option>'; }).join('') + '</select>' +
+                '<label>Or paste Spreadsheet ID manually</label><input type="text" id="cx-imp-spid" placeholder="1AbC…">' +
+                '<label>Sheet title (optional)</label><input type="text" id="cx-imp-title" placeholder="Sheet1">' +
+              '</div>' +
+              '<div class="cat-modal-f"><button type="button" class="ghost" id="cx-imp-cancel">Cancel</button><button type="button" class="btn-accent" id="cx-imp-go"' + (connected.length === 0 ? ' disabled' : '') + '>Import</button></div>' +
+            '</div>';
+        document.body.appendChild(bd);
+        function close() { bd.remove(); }
+        bd.querySelector('.x').onclick = close;
+        document.getElementById('cx-imp-cancel').onclick = close;
+        bd.onclick = function (e) { if (e.target === bd) close(); };
+        document.getElementById('cx-imp-go').onclick = function () {
+            var manual = document.getElementById('cx-imp-spid').value.trim();
+            var spid, title = document.getElementById('cx-imp-title').value.trim();
+            if (manual) { spid = manual; }
+            else {
+                var acc = document.getElementById('cx-imp-sheet').value;
+                var s = GOOGLE[acc];
+                if (!s || !s.spreadsheet_id) { toast('No sheet connected'); return; }
+                spid = s.spreadsheet_id; title = title || s.sheet_title || '';
+            }
+            catApi('/uadmin/catalog/import/sheet/start', { catalog_id: CAT.current, spreadsheet_id: spid, sheet_title: title }).then(function (r) {
+                if (!r.ok) { toast(r.error || 'Failed'); return; }
+                close();
+                toast('Import started…');
+                var jid = r.job_id, polls = 0;
+                var timer = setInterval(function () {
+                    polls++;
+                    catApi('/uadmin/catalog/import/job?job_id=' + encodeURIComponent(jid)).then(function (j) {
+                        if (!j.ok) { clearInterval(timer); toast(j.error || 'Job failed'); return; }
+                        var st = j.job.status;
+                        if (st === 'applied' || st === 'error') {
+                            clearInterval(timer);
+                            toast(st === 'applied' ? ('Imported ' + ((j.job.result && j.job.result.imported) || 0) + ' items') : ('Error: ' + (j.job.error || '')), st === 'error');
+                            catLoadItems(0);
+                            catApi('/uadmin/catalog/catalogs').then(function (rr) { if (rr.ok) { CAT.list = rr.catalogs || []; renderCatList(); } });
+                        } else if (polls > 60) { clearInterval(timer); toast('Import is taking too long'); }
+                    });
+                }, 1000);
+            });
+        };
+    }
+
+    function renderCatBindings() {
+        var host = document.getElementById('cx-cat-bind');
+        if (!host || !CAT.current) { if (host) host.innerHTML = ''; return; }
+        catApi('/uadmin/catalog/bindings?catalog_id=' + encodeURIComponent(CAT.current)).then(function (r) {
+            if (!r.ok) { host.innerHTML = ''; return; }
+            var bound = new Set(r.accounts || []);
+            var accts = (CLIENTS || []).map(function (a) { return { id: a.id, label: a.display_name || a.username || a.id, platform: a.platform || '' }; });
+            if (!accts.length) { host.innerHTML = ''; return; }
+            host.innerHTML = '<div class="bind-panel"><h4>Available to</h4><div class="bind-list">' + accts.map(function (a) {
+                return '<label class="bind-item"><input type="checkbox" data-acc="' + esc(a.id) + '"' + (bound.has(a.id) ? ' checked' : '') + '><div><div>' + esc(a.label) + '</div><small>' + esc(a.platform) + '</small></div></label>';
+            }).join('') + '</div></div>';
+            host.querySelectorAll('input[type=checkbox]').forEach(function (cb) {
+                cb.onchange = function () {
+                    var id = cb.dataset.acc, on = cb.checked, cat = CAT.current;
+                    cb.disabled = true;
+                    catApi('/uadmin/catalog/bindings?account_id=' + encodeURIComponent(id)).then(function (cur) {
+                        var ids = new Set((cur.catalogs || []).map(function (x) { return x.id; }));
+                        if (on) ids.add(cat); else ids.delete(cat);
+                        return catApi('/uadmin/catalog/bindings/set', { account_id: id, catalog_ids: Array.from(ids) });
+                    }).then(function (r2) {
+                        cb.disabled = false;
+                        if (r2 && r2.ok === false) { cb.checked = !on; toast(r2.error || 'Failed'); } else toast('Saved');
+                    }).catch(function (e) { cb.disabled = false; if (e !== 0) { cb.checked = !on; toast('Failed'); } });
+                };
+            });
+        });
+    }
+
+    // ==================== ANALYTICS ====================
+    function analytics() {
+        g('view').innerHTML = '<div id="cx-kpi"></div><div id="cx-detail"></div><div id="cx-c1"></div><div id="cx-c2"></div><div id="cx-c3"></div><div id="cx-audit"></div>';
+        api('/uadmin/crm/api/stats' + qs({ account_id: accId(), days: 14 })).then(function (s) {
+            if (!s.ok) return;
+            if (!s.daily_clients) {
+                var cp = { account_id: accId(), all: '1' };
+                s._cp = api('/uadmin/crm/api/clients' + qs(cp)).then(function (r) { if (r && r.ok) s._clients = r.items || []; }).catch(function () {});
+            }
+            g('kpi').innerHTML =
+                '<div class="cx-kpi cx-kpi-btn" data-kpi="clients"><b>' + (s.total_clients || 0) + '</b><span>Clients</span></div>' +
+                '<div class="cx-kpi cx-kpi-btn" data-kpi="wins"><b>' + (s.wins || 0) + '</b><span>Wins</span></div>' +
+                '<div class="cx-kpi cx-kpi-btn" data-kpi="conversion"><b>' + (s.conversion || 0) + '%</b><span>Conversion</span></div>';
+
+            g('kpi').onclick = function (e) {
+                var tile = e.target.closest('[data-kpi]'); if (!tile) return;
+                document.querySelectorAll('#cx-kpi .cx-kpi-btn').forEach(function (t) { t.classList.toggle('active', t === tile); });
+                var kind = tile.dataset.kpi;
+                (s._cp || Promise.resolve()).then(function () { drawKpiChart(kind, s); });
+            };
+
+            g('c3').innerHTML = STATUS.map(function (k) {
+                return '<span class="cx-pill cx-st-' + k + '" data-status="' + k + '">' + esc(SUA[k]) + ' · ' + ((s.statuses && s.statuses[k]) || 0) + '</span>';
+            }).join('');
+
+            g('c3').onclick = function (e) {
+                var p = e.target.closest('[data-status]'); if (!p) return;
+                document.querySelectorAll('#cx-kpi .cx-kpi-btn').forEach(function (t) { t.classList.remove('active'); });
+                var stKind = 'status:' + p.dataset.status;
+                (s._cp || Promise.resolve()).then(function () { drawKpiChart(stKind, s); });
+            };
+        });
+        api('/uadmin/crm/api/audit').then(function (r) {
+            g('audit').innerHTML = r.ok && r.items.length
+                ? r.items.map(function (a) { return '<div class="cx-audit-row">' + esc(fmt(a.created_at)) + ' — ' + esc(a.action) + '</div>'; }).join('')
+                : 'Empty.';
+        });
+    }
+
+    function fallbackSeries(kind, stats) {
+        var days = 14, map = {}, out = [], i;
+        for (i = days - 1; i >= 0; i--) {
+            var d = new Date(); d.setDate(d.getDate() - i);
+            var key = d.toISOString().slice(0, 10);
+            map[key] = { date: key, n: 0, won: 0, st: 0 };
+            out.push(map[key]);
+        }
+        var stKey = kind.indexOf('status:') === 0 ? kind.slice(7) : null;
+        (stats._clients || []).forEach(function (c) {
+            var day = String(c.created_at || c.last_at || '').slice(0, 10), m = map[day];
+            if (!m) return;
+            m.n++;
+            if (c.status === 'won' || c.is_won) m.won++;
+            if (stKey && c.status === stKey) m.st++;
+        });
+        return out.map(function (m) {
+            var v = kind === 'clients' ? m.n : kind === 'wins' ? m.won
+                  : kind === 'conversion' ? (m.n ? Math.round(m.won / m.n * 100) : 0) : m.st;
+            return { date: m.date, value: v };
+        });
+    }
+
+    function drawKpiChart(kind, stats) {
+        var host = g('detail');
+        if (!host) return;
+        var color = '#4c5fd7', label = '', series = [], mode = 'line';
+
+        if (kind === 'clients') {
+            label = 'New clients per day (last 14 days)';
+            series = stats.daily_clients || [];
+            mode = 'bar';
+        } else if (kind === 'wins') {
+            label = 'Wins per day (last 14 days)';
+            series = stats.daily_wins || [];
+            mode = 'bar';
+        } else if (kind === 'conversion') {
+            label = 'Conversion % per day';
+            series = stats.daily_conversion || [];
+            color = '#15803d';
+            mode = 'line';
+        } else if (kind.indexOf('status:') === 0) {
+            var st = kind.slice(7);
+            label = 'Clients with status "' + (SUA[st] || st) + '" per day';
+            series = (stats.daily_by_status && stats.daily_by_status[st]) || [];
+            color = ({ new: '#4c5fd7', talking: '#b26a00', qualified: '#0a6aa1', won: '#15803d', lost: '#6b7089' })[st] || '#4c5fd7';
+            mode = 'line';
+        }
+
+        if (!series.length) series = fallbackSeries(kind, stats);
+
+        var W = Math.max(320, host.clientWidth || 600), H = 200;
+        var P = { t: 20, r: 16, b: 28, l: 32 };
+        var iw = W - P.l - P.r, ih = H - P.t - P.b;
+        var max = Math.max.apply(null, series.map(function (p) { return +p.value || 0; })) || 1;
+        var stepX = series.length > 1 ? iw / (series.length - 1) : 0;
+
+        var pts = series.map(function (p, i) {
+            var x = P.l + i * stepX;
+            var y = P.t + ih - ((+p.value || 0) / max) * ih;
+            return [x, y];
+        });
+
+        var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" preserveAspectRatio="none" style="display:block">';
+        svg += '<line x1="' + P.l + '" y1="' + (P.t + ih) + '" x2="' + (W - P.r) + '" y2="' + (P.t + ih) + '" stroke="#dfe3f5"/>';
+        svg += '<line x1="' + P.l + '" y1="' + P.t + '" x2="' + P.l + '" y2="' + (P.t + ih) + '" stroke="#dfe3f5"/>';
+        svg += '<text x="' + (P.l - 6) + '" y="' + (P.t + 4) + '" text-anchor="end" font-size="10" fill="#8a90a8">' + max + '</text>';
+        svg += '<text x="' + (P.l - 6) + '" y="' + (P.t + ih) + '" text-anchor="end" font-size="10" fill="#8a90a8">0</text>';
+
+        if (mode === 'bar') {
+            var bw = Math.max(4, (iw / series.length) * 0.6);
+            pts.forEach(function (pt, i) {
+                var x = pt[0] - bw / 2;
+                var h = P.t + ih - pt[1];
+                var op = 0.55 + 0.45 * (i / Math.max(1, series.length - 1));
+                svg += '<rect x="' + x.toFixed(1) + '" y="' + pt[1].toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(0, h).toFixed(1) + '" rx="3" fill="' + color + '" opacity="' + op.toFixed(2) + '"/>';
+            });
+        } else {
+            var line = 'M' + pts.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L');
+            var area = line + ' L' + (P.l + iw).toFixed(1) + ',' + (P.t + ih) + ' L' + P.l + ',' + (P.t + ih) + ' Z';
+            svg += '<path d="' + area + '" fill="' + color + '" opacity="0.12"/>';
+            svg += '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+            pts.forEach(function (p) { svg += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="#fff" stroke="' + color + '" stroke-width="2"/>'; });
+        }
+
+        series.forEach(function (p, i) {
+            if (i % 3 !== 0 && i !== series.length - 1) return;
+            var x = P.l + i * stepX;
+            var lbl = (p.date || '').slice(5);
+            svg += '<text x="' + x.toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="#8a90a8">' + esc(lbl) + '</text>';
+        });
+        svg += '</svg>';
+
+        host.innerHTML = '<div class="cx-chart-card"><div class="cx-chart-h"><b>' + esc(label) + '</b><button type="button" class="ghost small" id="cx-chart-close">×</button></div>' + svg + '</div>';
+        try { host.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } catch (e) {}
+        var closeBtn = document.getElementById('cx-chart-close');
+        if (closeBtn) closeBtn.onclick = function () {
+            host.innerHTML = '';
+            document.querySelectorAll('#cx-kpi .cx-kpi-btn').forEach(function (t) { t.classList.remove('active'); });
+        };
+    }
+
+    // ==================== TABS ====================
+    var TITLES = { inbox: 'Inbox', clients: 'Clients', table: 'Table', catalog: 'Catalog', assistant: 'Analytics' };
+    function render() {
+        var _p = crmPane(); if (_p) _p.classList.remove('thread-open');
+        if (tab === 'settings') return;
+        g('title').textContent = TITLES[tab];
+        ({ inbox: inbox, clients: clients, table: table, catalog: catalog, assistant: analytics })[tab]();
+    }
+    function setTab(t) {
+        tab = t;
+        var um = document.getElementById('userMenuBtn'); if (um) um.classList.toggle('cur', t === 'settings');
+        document.querySelectorAll('.cx-tab[data-t]').forEach(function (b) { b.classList.toggle('on', b.dataset.t === t); });
+        var ps = document.getElementById('cx-pane-settings');
+        var pc = document.getElementById('cx-pane-crm');
+        if (ps) ps.classList.toggle('on', t === 'settings');
+        if (pc) pc.classList.toggle('on', t !== 'settings');
+        if (location.hash.slice(1) !== t) history.replaceState(null, '', '#' + t);
+        render();
+    }
+    function openSettingsPane() {
+        var menu = document.getElementById('userMenu'), btn = document.getElementById('userMenuBtn');
+        if (menu) menu.classList.remove('open');
+        if (btn) btn.classList.remove('open');
+        setTab('settings');
+    }
+
+    document.querySelectorAll('.cx-tab[data-t]').forEach(function (b) { b.onclick = function () { setTab(b.dataset.t); }; });
+    g('acc').onchange = render;
+
+    // ==================== NAV / ASST COLLAPSE ====================
+    var app = g('app');
+    var navBtn = g('nav-toggle');
+    var asstBtn = g('asst-toggle');
+    if (app && navBtn) navBtn.onclick = function () { app.classList.toggle('collapsed-nav'); };
+    if (app && asstBtn) asstBtn.onclick = function () { app.classList.toggle('collapsed-asst'); };
+    var fab = g('asst-fab');
+    if (app && fab) fab.onclick = function () { app.classList.remove('collapsed-asst'); };
+    if (app && window.innerWidth < 1180) app.classList.add('collapsed-asst');
+
+    // ==================== SEARCH ====================
+    function openS() {
+        g('srch').classList.add('on'); g('sq').value = '';
+        g('sr').innerHTML = '<div class="cx-sr-empty">Type a name or message…</div>';
+        g('sq').focus();
+    }
+    function closeS() { g('srch').classList.remove('on'); }
+    var sT;
+    g('sq').oninput = function () {
+        clearTimeout(sT); var q = this.value.trim();
+        if (q.length < 2) return;
+        sT = setTimeout(function () {
+            api('/uadmin/crm/api/search' + qs({ q: q, account_id: accId() })).then(function (r) {
+                if (!r.ok) return;
+                var h = '';
+                var IU = '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6"/></svg>';
+                var IM = '<svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
+                if (r.contacts.length) h += '<div class="cx-sr-g">Clients</div>';
+                r.contacts.forEach(function (c, i) { h += '<div class="cx-sr-row" data-k="c' + i + '"><span class="cx-sr-ico">' + IU + '</span><span class="cx-sr-t">' + esc(who(c)) + '</span>' + (c.status ? pill(c.status) : '') + '</div>'; });
+                if (r.messages.length) h += '<div class="cx-sr-g">Messages</div>';
+                r.messages.forEach(function (m, i) { h += '<div class="cx-sr-row" data-k="m' + i + '"><span class="cx-sr-ico">' + IM + '</span><span class="cx-sr-t">' + esc(m.text) + '</span><span class="cx-sr-d">' + esc(fmt(m.created_at)) + '</span></div>'; });
+                g('sr').innerHTML = h || '<div class="cx-sr-empty">Nothing found.</div>';
+                g('sr').onclick = function (e) {
+                    var row = e.target.closest('[data-k]'); if (!row) return;
+                    var k = row.dataset.k; sel = (k[0] === 'c' ? r.contacts : r.messages)[+k.slice(1)];
+                    closeS(); setTab('inbox');
+                };
+            });
+        }, 220);
+    };
+    g('so').onclick = openS;
+    g('srch').onclick = function (e) { if (e.target.id === 'cx-srch') closeS(); };
+    document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openS(); }
+        if (e.key === 'Escape') closeS();
+    });
+
+    // ==================== MARKDOWN (Assti) ====================
+    var COPY_ICO = '<svg class="i" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>';
+    var KW = /^(?:as|async|await|break|case|catch|class|const|continue|def|default|del|elif|else|enum|export|extends|finally|for|from|function|if|import|in|interface|is|lambda|let|new|not|null|None|or|and|pass|raise|return|self|static|struct|super|switch|this|throw|true|false|True|False|try|type|var|while|with|yield|SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|JOIN|CREATE|TABLE|ORDER|BY|GROUP|LIMIT|INTO|VALUES)$/;
+    var TAIL = /("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|(\b\d+(?:\.\d+)?\b)|([A-Za-z_]\w*)/.source;
+    function hl(code, lang) {
+        var hash = /^(py|python|sh|bash|shell|zsh|yaml|yml|toml|ini|rb|ruby|dockerfile|env|r)$/.test(lang);
+        var cm = hash ? '#[^\\n]*' : '\\/\\*[\\s\\S]*?\\*\\/|(?<!:)\\/\\/[^\\n]*|#\\s[^\\n]*';
+        var re = new RegExp('(' + cm + ')|' + TAIL, 'g');
+        var out = '', last = 0, m;
+        while ((m = re.exec(code))) {
+            out += esc(code.slice(last, m.index));
+            var cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'n' : (m[4] && KW.test(m[4]) && code.charAt(m.index - 1) !== '-' ? 'k' : '');
+            out += cls ? '<span class="tk-' + cls + '">' + esc(m[0]) + '</span>' : esc(m[0]);
+            last = re.lastIndex;
+        }
+        return out + esc(code.slice(last));
+    }
+    function codeBlock(lang, code) {
+        var l = (lang || '').toLowerCase();
+        return '<div class="cx-code"><div class="cx-code-h"><span>' + esc(l || 'code') + '</span><button type="button" class="cx-copy">' + COPY_ICO + '<span>Copy</span></button></div><pre><code>' + hl(code, l) + '</code></pre></div>';
+    }
+    function inl(s) {
+        var codes = [];
+        s = esc(s).replace(/`([^`\n]+)`/g, function (_, c) { codes.push(c); return '\u0000' + (codes.length - 1) + '\u0000'; });
+        s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+|mailto:[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+             .replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>')
+             .replace(/\*\*([^*\n]+)\*\*|__([^_\n]+)__/g, function (_, a, b) { return '<strong>' + (a || b) + '</strong>'; })
+             .replace(/(^|[^*\w])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
+             .replace(/(^|[^\w_])_([^_\n]+)_(?![\w_])/g, '$1<em>$2</em>')
+             .replace(/~~([^~\n]+)~~/g, '<del>$1</del>');
+        return s.replace(/\u0000(\d+)\u0000/g, function (_, i) { return '<code>' + codes[+i] + '</code>'; });
+    }
+    var LI = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
+    function mdList(items) {
+        var html = '', st = [];
+        items.forEach(function (it) {
+            while (st.length && it.ind < st[st.length - 1].ind) html += '</li></' + st.pop().tag + '>';
+            var top = st[st.length - 1];
+            if (!top || it.ind > top.ind) { var tag = it.ord ? 'ol' : 'ul'; st.push({ ind: it.ind, tag: tag }); html += '<' + tag + '><li>' + inl(it.text); }
+            else html += '</li><li>' + inl(it.text);
+        });
+        while (st.length) html += '</li></' + st.pop().tag + '>';
+        return html;
+    }
+    function mdRender(src, blocks) {
+        var L = src.split('\n'), out = [], i = 0, m;
+        function isTbl(k) { return /\|/.test(L[k] || '') && /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/.test(L[k + 1] || ''); }
+        function cells(l) { return l.trim().replace(/^\||\|$/g, '').split('|').map(function (c) { return c.trim(); }); }
+        while (i < L.length) {
+            var ln = L[i];
+            if (!ln.trim()) { i++; continue; }
+            if ((m = ln.match(/^\u0001(\d+)\u0001$/))) { out.push(blocks[+m[1]]); i++; continue; }
+            if ((m = ln.match(/^(#{1,4})\s+(.+?)\s*#*$/))) { out.push('<h' + m[1].length + '>' + inl(m[2]) + '</h' + m[1].length + '>'); i++; continue; }
+            if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(ln)) { out.push('<hr>'); i++; continue; }
+            if (isTbl(i)) {
+                var head = cells(L[i]), rows = []; i += 2;
+                while (i < L.length && L[i].trim() && /\|/.test(L[i])) { rows.push(cells(L[i])); i++; }
+                out.push('<div class="cx-tblw"><table><thead><tr>' + head.map(function (c) { return '<th>' + inl(c) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+                    rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + inl(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>');
+                continue;
+            }
+            if (/^\s*>/.test(ln)) {
+                var q = [];
+                while (i < L.length && /^\s*>/.test(L[i])) { q.push(L[i].replace(/^\s*>\s?/, '')); i++; }
+                out.push('<blockquote>' + mdRender(q.join('\n'), blocks) + '</blockquote>'); continue;
+            }
+            if (LI.test(ln)) {
+                var items = [];
+                while (i < L.length && (m = L[i].match(LI))) { items.push({ ind: m[1].replace(/\t/g, '  ').length, ord: /\d/.test(m[2]), text: m[3] }); i++; }
+                out.push(mdList(items)); continue;
+            }
+            var p = [];
+            while (i < L.length && L[i].trim() && !/^(#{1,4}\s|\s*>|\u0001)/.test(L[i]) && !LI.test(L[i]) && !isTbl(i)) { p.push(L[i]); i++; }
+            if (!p.length) { p.push(L[i]); i++; }
+            out.push('<p>' + p.map(inl).join('<br>') + '</p>');
+        }
+        return out.join('');
+    }
+    function md(src) {
+        var blocks = [];
+        src = String(src == null ? '' : src).replace(/\r/g, '').replace(/```([\w+#.-]*)[^\S\n]*\n?([\s\S]*?)(?:\n?```|$)/g, function (_, lang, code) {
+            blocks.push(codeBlock(lang, code.replace(/\n$/, '')));
+            return '\n\u0001' + (blocks.length - 1) + '\u0001\n';
+        });
+        return mdRender(src, blocks);
+    }
+    g('chat').addEventListener('click', function (e) {
+        var b = e.target.closest('.cx-copy'); if (!b) return;
+        var txt = b.closest('.cx-code').querySelector('code').textContent;
+        function done() { var s = b.querySelector('span'); s.textContent = 'Copied'; b.classList.add('ok'); setTimeout(function () { s.textContent = 'Copy'; b.classList.remove('ok'); }, 1600); }
+        function fallback() { var t = document.createElement('textarea'); t.value = txt; t.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); done(); } catch (_) {} document.body.removeChild(t); }
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done, fallback); else fallback();
+    });
+
+    // ==================== ASSTI CHAT ====================
+    function say(t, c) { var d = document.createElement('div'); d.className = 'cx-m ' + c; if (c === 'a') d.innerHTML = md(t); else d.textContent = t; g('chat').appendChild(d); g('chat').scrollTop = 1e9; return d; }
+    function card(p) {
+        var d = document.createElement('div'); d.className = 'cx-act';
+        d.innerHTML = '<b>Confirm</b><div></div><div class="bt"><button type="button" data-ok>Confirm</button><button type="button" data-no>Cancel</button></div>';
+        d.children[1].textContent = p.summary;
+        d.onclick = function (e) {
+            var ok = e.target.hasAttribute('data-ok'), no = e.target.hasAttribute('data-no');
+            if (!ok && !no) return;
+            api('/uadmin/crm/api/assistant/confirm', { id: p.id, approve: ok }).then(function (r) {
+                d.innerHTML = '';
+                d.textContent = r.ok ? (ok ? 'Done: ' : 'Cancelled: ') + p.summary : 'Failed';
+                if (r.ok && ok) render();
+            });
+        };
+        g('chat').appendChild(d); g('chat').scrollTop = 1e9;
+    }
+    function ask(text) {
+        say(text, 'u'); var wait = say('Thinking…', 'a'); g('send').disabled = true;
+        api('/uadmin/crm/api/assistant', { message: text, days: days, history: hist }).then(function (r) {
+            wait.remove();
+            if (!r.ok) { say('Error.', 'a'); return; }
+            say(r.reply, 'a'); hist.push({ role: 'user', content: text }, { role: 'assistant', content: r.reply }); hist = hist.slice(-6);
+            (r.pending || []).forEach(card);
+        }).catch(function () { wait.remove(); say('No connection.', 'a'); }).then(function () { g('send').disabled = false; });
+    }
+    g('f').onsubmit = function (e) { e.preventDefault(); var v = g('q').value.trim(); if (v) { g('q').value = ''; ask(v); } };
+    g('per').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; days = +b.dataset.d; document.querySelectorAll('#cx-per button').forEach(function (x) { x.classList.toggle('on', x === b); }); };
+    g('chips').innerHTML = ['Summarise the period', 'Who is waiting?', 'Hot leads?'].map(function (s) { return '<button type="button">' + esc(s) + '</button>'; }).join('');
+    g('chips').onclick = function (e) { var b = e.target.closest('button'); if (b) ask(b.textContent); };
+    say("Hi! I'm Assti.", 'a');
+
+    // ==================== INIT ====================
+    var h0 = location.hash.slice(1);
+    if (TITLES[h0]) setTab(h0);
+    else setTab('assistant');
+
+    // Export to global scope for onclick handlers in HTML
+    window.openSettingsPane = openSettingsPane;
+    window.toggleUserMenu = toggleUserMenu;
+    window.openDeleteModal = openDeleteModal;
+    window.closeDeleteModal = closeDeleteModal;
+    window.openPasswordModal = openPasswordModal;
+    window.closePasswordModal = closePasswordModal;
+    window.toggleAddMenu = toggleAddMenu;
+    window.filterClients = filterClients;
+    window.selectClient = selectClient;
+    window.toggleIntegrationDetail = toggleIntegrationDetail;
+    window.saveIntegration = saveIntegration;
+    window.addField = addField;
+    window.setTab = setTab;
+})();
+</script>
+{% endif %}
+</body>
+</html>

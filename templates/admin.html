@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Spiklio — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+html { -webkit-tap-highlight-color: transparent; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root { --ink:#14172b; --pri:#4c5fd7; --pri-d:#3f50c4; --soft:#eef0ff; --line:#dfe3f5; --bg:#f6f8ff; --mut:rgba(20,23,43,.58);
+  --ok:#15803d; --ok-bg:#e3f8ea; --bad:#d6333f; --bad-bg:#fdecee; --warn:#8a5a00; --warn-bg:#fff6e0; --r:14px;
+  --sh:0 1px 2px rgba(20,23,43,.04),0 8px 24px -14px rgba(76,95,215,.25); }
+html, body { height: 100%; }
+body { font: 14px 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--ink); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, .brand { font-family: 'Poppins', 'Inter', sans-serif; letter-spacing: -.01em; }
+svg.i { width: 18px; height: 18px; flex-shrink: 0; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-thumb { background: rgba(76,95,215,.2); border-radius: 4px; }
+
+.brand { display: inline-flex; align-items: center; gap: 6px; user-select: none; line-height: 1; }
+.brand-mark { width: 30px; height: 30px; display: flex; flex-shrink: 0; } .brand-mark img { width: 100%; height: 100%; display: block; }
+.brand-name { color: var(--pri); font-size: 1.3rem; font-weight: 700; letter-spacing: -.03em; }
+
+input[type=text], input[type=password], input[type=number], select, textarea { width: 100%; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: .6rem .8rem; font: inherit; color: var(--ink); outline: none; transition: border-color .2s, box-shadow .2s; }
+textarea { resize: vertical; line-height: 1.5; }
+input:focus, select:focus, textarea:focus { border-color: rgba(76,95,215,.6); box-shadow: 0 0 0 4px rgba(76,95,215,.1); }
+input[type=checkbox] { accent-color: var(--pri); width: 16px; height: 16px; }
+label { display: block; font-size: .8rem; color: var(--mut); margin: 14px 0 6px; }
+button { font: inherit; }
+.btn, .ghost, .danger { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 10px; padding: .6rem 1.1rem; font-weight: 600; font-size: .88rem; cursor: pointer; border: 1px solid transparent; text-decoration: none; white-space: nowrap; transition: background .15s, border-color .15s, color .15s; }
+.btn { background: var(--pri); color: #fff; } .btn:hover { background: var(--pri-d); } .btn:disabled { opacity: .5; cursor: not-allowed; }
+.ghost { background: #fff; color: var(--ink); border-color: var(--line); } .ghost:hover { border-color: var(--pri); color: var(--pri); }
+.danger { background: #fff; color: var(--bad); border-color: #f3c5c9; } .danger:hover { background: var(--bad-bg); }
+.sm { height: 32px; padding: 0 .75rem; font-size: .8rem; border-radius: 8px; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+.card { background: #fff; border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--sh); }
+.pad { padding: 18px; }
+.msg { padding: .75rem 1rem; border-radius: 10px; margin-bottom: 16px; font-size: .88rem; }
+.msg.err { background: var(--bad-bg); color: var(--bad); } .msg.ok { background: var(--ok-bg); color: var(--ok); }
+.badge { display: inline-flex; align-items: center; height: 24px; line-height: 1; white-space: nowrap; font-size: .72rem; font-weight: 600; padding: 0 10px; border-radius: 20px; background: var(--soft); color: var(--pri); }
+.badge.ok { background: var(--ok-bg); color: var(--ok); } .badge.off { background: #f1f2f7; color: var(--mut); }
+.mut { color: var(--mut); } .mono { font-family: 'SF Mono', Menlo, monospace; font-size: .76rem; word-break: break-all; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+.login { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.login .card { width: 100%; max-width: 400px; padding: 2rem; }
+.login .brand { display: flex; justify-content: center; margin-bottom: 1.2rem; }
+.login input { margin-bottom: 12px; } .login .btn { width: 100%; }
+
+.app { --aw: 340px; display: grid; grid-template-columns: 232px minmax(0,1fr) var(--aw); height: 100vh; height: 100dvh; }
+.nav { background: #fff; border-right: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; padding: 16px 12px; position: relative; z-index: 70; }
+.nav .brand { padding: 0 6px 14px; }
+.tab { display: flex; align-items: center; gap: 12px; width: 100%; padding: .65rem .8rem; border: none; background: none; border-radius: 10px; color: rgba(20,23,43,.72); font-weight: 500; font-size: .9rem; cursor: pointer; text-align: left; text-decoration: none; transition: background .15s, color .15s; }
+.tab:hover { background: var(--soft); color: var(--pri); }
+.tab.on { background: var(--soft); color: var(--pri); font-weight: 600; box-shadow: inset 3px 0 0 var(--pri); }
+.tab .n { margin-left: auto; font-size: .72rem; color: var(--mut); }
+.nav-b { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); }
+.main { min-width: 0; min-height: 0; overflow-y: auto; }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 28px 32px 32px; }
+.pane { display: none; } .pane.on { display: block; }
+.page-h { margin-bottom: 18px; } .page-h h1 { font-size: 1.5rem; } .page-h p { color: var(--mut); margin-top: 4px; }
+.bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; } .bar > * { flex: 1; min-width: 140px; } .bar .fix { flex: 0 0 auto; }
+
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: .7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--mut); font-weight: 600; padding: 10px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+.tw { overflow-x: auto; }
+.who { display: flex; align-items: center; gap: 10px; min-width: 180px; }
+.av { font-size: .95rem; width: 36px; height: 34px; border-radius: 50%; background: var(--soft); color: var(--pri); display: flex; align-items: center; justify-content: center; font-weight: 700; overflow: hidden; flex-shrink: 0; }
+.av img { width: 100%; height: 100%; object-fit: cover; }
+.acts { display: flex; gap: 6px; flex-wrap: nowrap; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; } .chip { font-size: .76rem; background: #f4f6ff; border: 1px solid var(--line); border-radius: 6px; padding: 2px 7px; }
+.chip b { font-weight: 600; color: var(--mut); }
+.frow { display: grid; grid-template-columns: 1.1fr 1.4fr .8fr auto auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+.frow label { display: flex; align-items: center; gap: 6px; margin: 0; font-size: .8rem; }
+.empty { padding: 28px; text-align: center; color: var(--mut); }
+
+@media (max-width: 900px) { .wrap { padding: 20px 16px; } .frow { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) {
+  .app { grid-template-columns: 1fr; grid-template-rows: minmax(0,1fr) auto; }
+  .main { grid-row: 1; }
+  .nav { grid-row: 2; flex-direction: row; align-items: center; gap: 2px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom,0px)); border-right: none; border-top: 1px solid var(--line); }
+  .nav .brand, .tab .l, .tab .n { display: none; }
+  .tab { flex: 1; justify-content: center; padding: .7rem 0; } .tab.on { box-shadow: none; }
+  .nav-b { margin: 0; padding: 0; border: none; } .nav-b .tab { width: 48px; }
+}
+
+.ctx { display: flex; gap: 10px; flex-wrap: wrap; padding: 10px; margin-bottom: 18px; position: sticky; top: 0; z-index: 30; }
+.cb { position: relative; flex: 1; min-width: 220px; }
+.cb > button { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: .45rem .8rem; cursor: pointer; color: var(--ink); text-align: left; min-height: 46px; }
+.cb > button:hover { border-color: var(--pri); }
+.cb small { display: block; color: var(--mut); font-size: .66rem; text-transform: uppercase; letter-spacing: .8px; }
+.pop { position: absolute; z-index: 60; left: 0; right: 0; top: calc(100% + 6px); background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 16px 40px -12px rgba(20,23,43,.3); padding: 8px; }
+.pop ul { list-style: none; max-height: 260px; overflow: auto; margin-top: 6px; }
+.pop li { display: flex; justify-content: space-between; gap: 8px; padding: .5rem .6rem; border-radius: 8px; cursor: pointer; }
+.pop li:hover, .pop li.on { background: var(--soft); }
+
+.as { background: #fff; border-left: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
+.as-h { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 8px; }
+.as-h b { display: flex; align-items: center; gap: 8px; font: 600 1rem 'Poppins'; }
+.as-h .sp { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg,#4c5fd7,#8a97f0); color: #fff; display: flex; align-items: center; justify-content: center; }
+.as-b { display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; padding: 0 16px 16px; }
+.as-n { font-size: .8rem; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#fnd { display: flex; flex-direction: column; gap: 6px; max-height: 34%; overflow: auto; }
+.f { display: flex; gap: 8px; align-items: flex-start; font-size: .8rem; line-height: 1.4; padding: .45rem .6rem; border-radius: 10px; background: #f4f6ff; }
+.f i { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; background: var(--pri); }
+.f.bad i { background: var(--bad); } .f.warn i { background: #e8a317; } .f.good i { background: var(--ok); }
+#chat { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; background: #fafbff; border-radius: 12px; }
+.m { max-width: 92%; padding: .55rem .8rem; border-radius: 14px; font-size: .85rem; line-height: 1.45; overflow-wrap: anywhere; }
+.m.u { align-self: flex-end; background: var(--pri); color: #fff; border-bottom-right-radius: 4px; }
+.m.a { align-self: flex-start; background: #eef0f7; border-bottom-left-radius: 4px; }
+.m p { margin: 0 0 .5em; } .m p:last-child { margin: 0; } .m ul { padding-left: 1.2em; margin: 0 0 .5em; }
+.m code { background: #fff; border: 1px solid var(--line); border-radius: 5px; padding: 0 .3em; font-size: .85em; }
+.chips2 { display: flex; flex-wrap: wrap; gap: 6px; } .chips2 button { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: .3rem .7rem; font-size: .76rem; color: var(--pri); cursor: pointer; } .chips2 button:hover { background: var(--soft); }
+.cb2 { position: relative; margin: .4em 0 .6em; background: #14172b; color: #e8ebf8; border-radius: 10px; } .cb2 pre { margin: 0; padding: 10px 12px; padding-top: 28px; white-space: pre-wrap; overflow-wrap: anywhere; font: .78rem/1.5 'SF Mono', Menlo, monospace; } .cb2 .cp { position: absolute; top: 4px; right: 6px; background: none; border: none; color: rgba(232,235,248,.65); font-size: .7rem; cursor: pointer; padding: 2px 6px; border-radius: 6px; } .cb2 .cp:hover { background: rgba(255,255,255,.12); color: #fff; }
+#af { display: flex; gap: 8px; } #as { width: 42px; padding: 0; flex-shrink: 0; } #as svg { width: 18px; height: 18px; }
+.as-tg { background: none; border: none; color: var(--mut); width: 30px; height: 30px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.as-tg:hover { background: var(--soft); color: var(--pri); }
+.as-tg svg { width: 16px; height: 16px; transition: transform .25s ease; }
+.collapsed-asst .as-tg svg { transform: rotate(180deg); }
+.collapsed-asst .as-b, .collapsed-asst .as-h b { display: none; }
+.collapsed-asst .as-h { justify-content: center; padding: 16px 0; }
+.app { transition: grid-template-columns .25s ease; }
+.app.collapsed-asst { --aw: 56px; }
+#afab { display: none; }
+@media (max-width: 1180px) {
+  .app { grid-template-columns: 232px minmax(0,1fr); }
+  .as { position: fixed; top: 0; right: 0; bottom: 0; width: min(360px, 100vw); z-index: 80; box-shadow: -20px 0 40px -20px rgba(20,23,43,.3); }
+  .app.collapsed-asst .as { display: none; }
+  .collapsed-asst #afab { display: flex; position: fixed; right: 20px; bottom: 20px; z-index: 65; width: 52px; height: 52px; border-radius: 50%; border: none; background: var(--pri); color: #fff; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 12px 28px -8px rgba(76,95,215,.7); }
+}
+@media (max-width: 640px) { .app { grid-template-columns: 1fr; } .ctx { position: static; } .collapsed-asst #afab { right: 16px; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); } }
+
+/* ============ CATALOG ============ */
+.cat-grid { display: grid; grid-template-columns: 260px minmax(0,1fr); gap: 18px; }
+@media (max-width: 900px) { .cat-grid { grid-template-columns: 1fr; } }
+.cat-list { display: flex; flex-direction: column; gap: 6px; }
+.cat-item { display: flex; align-items: center; gap: 8px; padding: .55rem .7rem; border-radius: 10px; border: 1px solid transparent; cursor: pointer; background: #fff; }
+.cat-item:hover { border-color: var(--line); }
+.cat-item.on { border-color: var(--pri); background: var(--soft); }
+.cat-item .cname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.cat-item .cmeta { font-size: .72rem; color: var(--mut); white-space: nowrap; }
+.cat-item .ctools { display: none; gap: 2px; }
+.cat-item:hover .ctools { display: flex; }
+.cat-item .ctools button { background: none; border: none; padding: 2px 6px; border-radius: 6px; cursor: pointer; color: var(--mut); font-size: .9rem; }
+.cat-item .ctools button:hover { background: #fff; color: var(--pri); }
+.cat-item .badge { font-size: .62rem; height: 18px; padding: 0 6px; }
+.cat-empty { padding: 18px; text-align: center; color: var(--mut); font-size: .88rem; }
+
+.item-row { display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; padding: .55rem .7rem; border-bottom: 1px solid var(--line); align-items: center; font-size: .88rem; }
+.item-row:hover { background: #fafbff; }
+.item-row .iname { font-weight: 500; }
+.item-row .imeta { font-size: .76rem; color: var(--mut); margin-top: 2px; }
+.item-row .iacts { display: flex; gap: 4px; }
+.item-row .iacts button { background: none; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; color: var(--mut); font-size: .82rem; }
+.item-row .iacts button:hover { background: var(--soft); color: var(--pri); }
+.item-row .iacts button.del:hover { background: var(--bad-bg); color: var(--bad); }
+
+.pager { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 14px; font-size: .85rem; color: var(--mut); }
+
+.modal-bd { position: fixed; inset: 0; background: rgba(20,23,43,.45); z-index: 200; display: flex; align-items: flex-start; justify-content: center; padding: 4vh 20px; overflow-y: auto; }
+.modal { background: #fff; border-radius: 16px; box-shadow: 0 30px 80px -20px rgba(20,23,43,.4); width: 100%; max-width: 640px; }
+.modal-h { padding: 18px 22px 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+.modal-h h3 { font-size: 1.05rem; }
+.modal-h .x { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--mut); line-height: 1; padding: 0 8px; }
+.modal-b { padding: 18px 22px; }
+.modal-f { padding: 12px 22px 18px; display: flex; gap: 10px; justify-content: flex-end; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid2 > div label:first-child { margin-top: 0; }
+@media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+.hint { font-size: .74rem; color: var(--mut); margin-top: 3px; }
+
+.bind-panel { background: #fafbff; border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+.bind-panel h4 { font-size: .82rem; text-transform: uppercase; letter-spacing: 1px; color: var(--mut); margin-bottom: 8px; }
+.bind-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow: auto; }
+.bind-item { display: flex; align-items: center; gap: 10px; padding: .4rem .55rem; border-radius: 8px; cursor: pointer; font-size: .86rem; }
+.bind-item:hover { background: var(--soft); }
+.bind-item small { color: var(--mut); font-size: .74rem; }
+
+.sheet-note { background: var(--warn-bg); border: 1px solid #f0d9a0; color: var(--warn); padding: .6rem .8rem; border-radius: 10px; font-size: .82rem; margin-bottom: 12px; }
+
+/* user selector for global admin */
+.user-sel { display: flex; gap: 10px; margin-bottom: 14px; align-items: center; flex-wrap: wrap; }
+.user-sel select { max-width: 320px; }
+</style>
+</head>
+<body>
+{% if not logged_in %}
+<div class="login">
+  <form class="card" method="POST" action="{{ url_for('admin') }}">
+    <div class="brand"><span class="brand-mark"><img src="{{ url_for('template_file', filename='logo.svg') }}" alt="Spiklio"></span><span class="brand-name">Spiklio</span></div>
+    <h3 style="text-align:center;margin-bottom:1rem;font-size:1rem" class="mut">Admin</h3>
+    {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+    <input type="password" name="password" placeholder="Password" autofocus required>
+    <button class="btn" type="submit">Sign in</button>
+  </form>
+</div>
+{% else %}
+{% set sheets = {} %}
+{% for k, v in google_sheets.items() %}{% set _ = sheets.update({k: {'spreadsheet_id': v.spreadsheet_id, 'sheet_title': v.sheet_title, 'connected_at': v.connected_at}}) %}{% endfor %}
+<div class="app" id="app">
+  <aside class="nav">
+    <div class="brand"><span class="brand-mark"><img src="{{ url_for('template_file', filename='logo.svg') }}" alt="Spiklio"></span><span class="brand-name">Spiklio</span></div>
+    <button class="tab on" data-t="clients" title="Clients"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg><span class="l">Clients</span><span class="n">{{ users|length }}</span></button>
+    <button class="tab" data-t="accounts" title="Accounts"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 14h4"/></svg><span class="l">Accounts</span></button>
+    <button class="tab" data-t="prompts" title="Prompts"><svg class="i" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="l">Prompt</span></button>
+    <button class="tab" data-t="integrations" title="Data fields"><svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span class="l">Data fields</span></button>
+    <button class="tab" data-t="records" title="Records"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span class="l">Records</span></button>
+    <button class="tab" data-t="sheets" title="Google Sheets"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg><span class="l">Google Sheets</span></button>
+    <button class="tab" data-t="catalog" title="Catalog"><svg class="i" viewBox="0 0 24 24"><path d="M3 6h18l-2 14H5z"/><path d="M8 6V4a4 4 0 0 1 8 0v2"/></svg><span class="l">Catalog</span><span class="n" id="cat-count"></span></button>
+    <div class="nav-b"><a class="tab" href="{{ url_for('admin_logout') }}" title="Sign out"><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span class="l">Sign out</span></a></div>
+  </aside>
+  <main class="main"><div class="wrap">
+    {% if error %}<div class="msg err">{{ error }}</div>{% endif %}
+    {% if success %}<div class="msg ok">{{ success }}</div>{% endif %}
+    <div class="card ctx" id="ctx" hidden><div class="cb" id="cc"></div><div class="cb" id="ca"></div></div>
+    <section class="pane on" id="p-clients"></section><section class="pane" id="p-accounts"></section><section class="pane" id="p-prompts"></section>
+    <section class="pane" id="p-integrations"></section><section class="pane" id="p-records"></section><section class="pane" id="p-sheets"></section>
+    <section class="pane" id="p-catalog"></section>
+  </div></main>
+  <aside class="as">
+    <div class="as-h"><b><span class="sp"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.2 6.3L21 12l-6.8 2.7L12 21l-2.2-6.3L3 12l6.8-2.7z"/></svg></span>Assti</b><button type="button" class="as-tg" id="atg" title="Collapse"><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button></div>
+    <div class="as-b"><div class="as-n" id="asn"></div><div id="fnd"></div><div id="chat"></div><div class="chips2" id="chips"></div>
+      <form id="af"><input type="text" id="aq" autocomplete="off" maxlength="1500" placeholder="Ask Assti…"><button class="btn" type="submit" id="as" aria-label="Send" title="Send"><svg class="i" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg></button></form></div>
+  </aside>
+  <button id="afab" type="button" title="Open Assti"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.2 6.3L21 12l-6.8 2.7L12 21l-2.2-6.3L3 12l6.8-2.7z"/></svg></button>
+</div>
+<script>
+window.__CSRF__ = {{ csrf_token|tojson }};
+const D = {{ {'accounts': accounts, 'users': users, 'prompts': prompts, 'integrations': integrations, 'records': records, 'sheets': sheets, 'types': field_types, 'brand': brand_prompt,
+  'u': {'save': url_for('admin_save'), 'del': url_for('admin_delete'), 'isave': url_for('admin_integrations_save'), 'idel': url_for('admin_integrations_delete'),
+        'rdel': url_for('admin_records_delete'), 'udel': url_for('admin_delete_user'), 'adel': url_for('admin_delete_account'),
+        'gcon': url_for('admin_google_connect'), 'gdis': url_for('admin_google_disconnect'), 'asst': url_for('admin_api_assistant'),
+        'cat': {'list': '/admin/catalog/catalogs', 'create': '/admin/catalog/catalogs/create', 'rename': '/admin/catalog/catalogs/rename',
+                'delete': '/admin/catalog/catalogs/delete', 'default': '/admin/catalog/catalogs/default',
+                'items': '/admin/catalog/items', 'itemSave': '/admin/catalog/item/save', 'itemDelete': '/admin/catalog/item/delete',
+                'bindingsGet': '/admin/catalog/bindings', 'bindingsSet': '/admin/catalog/bindings/set',
+                'bind': '/admin/catalog/bindings/bind', 'unbind': '/admin/catalog/bindings/unbind',
+                'importStart': '/admin/catalog/import/sheet/start', 'importJob': '/admin/catalog/import/job',
+                'allUsersCatalogs': '/admin/catalog/catalogs'}}}|tojson }};
+</script>
+<script>
+{% raw %}
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const CSRF = window.__CSRF__ || '';
+const U = D.u, accMap = {}, ownerOf = {};
+D.accounts.forEach(a => { if (a.id) accMap[a.id] = a; });
+D.users.forEach(u => u.accounts.forEach(a => { ownerOf[a.account_id] = 'u' + u.id; }));
+const allIds = [...new Set([...Object.keys(accMap), ...Object.keys(D.prompts), ...Object.keys(D.integrations), ...Object.keys(D.sheets)])];
+const nm = id => { const a = accMap[id]; return a ? (a.display_name || a.username || id) : id; };
+const clients = D.users.map(u => ({ k: 'u' + u.id, label: u.email, sub: u.accounts.length + ' acc', ids: u.accounts.map(a => a.account_id), u }));
+const orphan = allIds.filter(id => !ownerOf[id]);
+if (orphan.length) clients.push({ k: '_', label: 'Unassigned / default', sub: orphan.length + ' acc', ids: orphan });
+const cl = k => clients.find(c => c.k === k);
+const head = (t, s) => `<div class="page-h"><h1>${t}</h1><p>${s}</p></div>`;
+const none = t => `<div class="card"><div class="empty">${t}</div></div>`;
+const ava = a => { const l = esc((nm(a.id) || '?')[0].toUpperCase());
+  return `<div class="av">${a.profile_picture ? `<img src="${esc(a.profile_picture)}" data-l="${l}" referrerpolicy="no-referrer" onerror="this.parentNode.textContent=this.dataset.l">` : l}</div>`; };
+
+function post(action, fields, msg) {
+  if (msg && !confirm(msg)) return;
+  const f = document.createElement('form'); f.method = 'POST'; f.action = action;
+  Object.keys(fields).forEach(k => { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = fields[k]; f.appendChild(i); });
+  document.body.appendChild(f); f.submit();
+}
+async function jpost(url, body) {
+  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF }, body: JSON.stringify(body || {}) });
+  return r.json();
+}
+async function jget(url) { const r = await fetch(url); return r.json(); }
+function toast(t, bad) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + (bad ? 'err' : 'ok');
+  d.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:500;box-shadow:0 10px 30px -10px rgba(0,0,0,.3)';
+  d.textContent = t;
+  document.body.appendChild(d);
+  setTimeout(() => d.remove(), 2600);
+}
+
+const ctx = { t: 'clients', c: '', a: '' };
+const SCOPED = ['accounts', 'prompts', 'integrations', 'records', 'sheets'];
+function save() { history.replaceState(null, '', '#' + [ctx.t, ctx.c, ctx.a].map(encodeURIComponent).join('/')); try { localStorage.setItem('adm.ctx', JSON.stringify(ctx)); } catch (e) {} }
+function setClient(k) { ctx.c = k; const c = cl(k); ctx.a = c && c.ids.includes(ctx.a) ? ctx.a : (c && c.ids[0]) || ''; }
+function go(t, k, a) {
+  if (k) setClient(k); if (a) ctx.a = a;
+  if (SCOPED.includes(t) && !cl(ctx.c) && clients.length) setClient(clients[0].k);
+  ctx.t = t; save(); draw(); $('.main').scrollTop = 0;
+}
+document.querySelectorAll('.tab[data-t]').forEach(b => b.onclick = () => go(b.dataset.t));
+
+const closePop = () => document.querySelectorAll('.pop').forEach(p => p.remove());
+document.addEventListener('click', closePop);
+function combo(host, label, items, val, pick) {
+  const cur = items.find(i => i.v === val);
+  host.innerHTML = `<button type="button"><span><small>${label}</small>${cur ? esc(cur.l) : 'Select…'}</span><svg class="i" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>`;
+  host.firstChild.onclick = e => { e.stopPropagation(); const had = host.querySelector('.pop'); closePop(); if (had) return;
+    const d = document.createElement('div'); d.className = 'pop'; d.innerHTML = '<input type="text" placeholder="Search…"><ul></ul>'; host.appendChild(d);
+    const inp = d.firstChild, ul = d.lastChild;
+    const fill = () => { const q = inp.value.toLowerCase(), r = items.filter(i => (i.l + ' ' + (i.s || '')).toLowerCase().includes(q));
+      ul.innerHTML = r.slice(0, 50).map(i => `<li data-v="${esc(i.v)}" class="${i.v === val ? 'on' : ''}"><span>${esc(i.l)}</span><span class="mut">${esc(i.s || '')}</span></li>`).join('') || '<li class="mut">Nothing found</li>'; };
+    inp.oninput = fill; fill(); inp.focus();
+    d.onclick = ev => { ev.stopPropagation(); const li = ev.target.closest('li[data-v]'); if (li) { closePop(); pick(li.dataset.v); } }; };
+}
+
+function rClients() {
+  const el = $('#p-clients');
+  el.innerHTML = head('Clients', 'Client (uadmin) accounts. Open one to manage its bot accounts.') + `<div class="bar"><input type="text" id="cq" placeholder="Search by email…"></div><div class="card tw"><table><thead><tr><th>Client</th><th>Bot accounts</th><th>Limit</th><th>Created</th><th></th></tr></thead><tbody id="cb2"></tbody></table></div>`;
+  const draw1 = () => { const q = $('#cq').value.toLowerCase();
+    $('#cb2').innerHTML = clients.filter(c => c.label.toLowerCase().includes(q)).map(c => { const u = c.u;
+      const chips = c.ids.length ? `<div class="chips">${c.ids.slice(0, 5).map(id => `<span class="chip"><b>${esc((accMap[id] || {}).platform || '')}</b> ${esc(nm(id))}</span>`).join('')}${c.ids.length > 5 ? `<span class="chip">+${c.ids.length - 5}</span>` : ''}</div>` : '<span class="mut">none</span>';
+      return `<tr><td><b>${esc(c.label)}</b>${u ? `<div class="mut mono">#${u.id}</div>` : ''}</td><td>${chips}</td><td>${u ? `${c.ids.length} / ${u.max_accounts || '∞'}` : '—'}</td><td class="mut">${esc(u ? (u.created_at || '').slice(0, 10) : '')}</td>
+      <td><div class="acts"><button class="ghost sm" data-o="${esc(c.k)}">Open</button>${u ? `<button class="danger sm" data-u="${u.id}" data-e="${esc(u.email)}">Delete</button>` : ''}</div></td></tr>`; }).join('') || '<tr><td colspan="5" class="empty">No clients</td></tr>'; };
+  el.onclick = e => { const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.o) go('accounts', b.dataset.o);
+    if (b.dataset.u) post(U.udel, { user_id: b.dataset.u }, 'Delete user ' + b.dataset.e + ' and disconnect all their accounts?'); };
+  $('#cq').oninput = draw1; draw1();
+}
+function rAccounts() {
+  const el = $('#p-accounts'), c = cl(ctx.c); if (!c) { el.innerHTML = head('Accounts', '') + none('No clients yet'); return; }
+  el.innerHTML = head('Accounts', 'Bot accounts of the selected client.') + `<div class="card tw"><table><thead><tr><th>Account</th><th>Platform</th><th>Status</th><th></th></tr></thead><tbody>` +
+    (c.ids.map(id => { const a = accMap[id] || { id }; return `<tr><td><div class="who">${ava(a)}<div><b>${esc(a.display_name || a.username || id)}</b><div class="mono mut">${esc(id)}</div></div></div></td>
+      <td><span class="badge">${esc(a.platform || '—')}</span></td><td><span class="badge ${a.is_active === false ? 'off' : 'ok'}">${a.is_active === false ? 'inactive' : 'active'}</span></td>
+      <td><div class="acts"><button class="ghost sm" data-g="prompts" data-id="${esc(id)}">Prompt</button><button class="ghost sm" data-g="integrations" data-id="${esc(id)}">Fields</button><button class="ghost sm" data-g="sheets" data-id="${esc(id)}">Sheet</button>
+      <button class="danger sm" data-del="${esc(id)}" ${accMap[id] ? '' : 'disabled'}>Delete</button></div></td></tr>`; }).join('') || '<tr><td colspan="4" class="empty">This client has no accounts</td></tr>') + '</tbody></table></div>';
+  el.onclick = e => { const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.g) go(b.dataset.g, null, b.dataset.id);
+    if (b.dataset.del) post(U.adel, { account_id: b.dataset.del }, 'Delete account ' + nm(b.dataset.del) + '? It will be disconnected and its prompt, fields and sheet removed.'); };
+}
+function rPrompts() {
+  const el = $('#p-prompts'), id = ctx.a, h = head('Prompt', 'System prompt and short notes for the selected account.');
+  if (!id) { el.innerHTML = h + none('Select an account above'); return; }
+  const p = D.prompts[id] || { prompt: '', notes: [] };
+  el.innerHTML = h + `<div class="card pad"><form method="POST" action="${U.save}"><input type="hidden" name="account_id" value="${esc(id)}">
+    <label style="margin-top:0">System prompt</label><textarea name="prompt" rows="10" required>${esc(p.prompt)}</textarea>
+    <label>Notes (up to 3, 100 characters each)</label>${[0, 1, 2].map(i => `<input type="text" name="note${i + 1}" maxlength="100" value="${esc((p.notes || [])[i] || '')}" style="margin-bottom:8px">`).join('')}
+    <div class="row" style="margin-top:8px"><button class="btn" type="submit">Save</button><button class="danger" type="button" id="pd" ${id === 'default' || !(id in D.prompts) ? 'disabled' : ''}>Delete prompt</button></div></form>
+    <label>Brand prefix (added automatically)</label><div class="mono mut">${esc(D.brand)}</div></div>`;
+  $('#pd').onclick = () => post(U.del, { account_id: id }, 'Delete prompt for ' + nm(id) + '?');
+}
+function rFields() {
+  const el = $('#p-integrations'), id = ctx.a, h = head('Data fields', 'What the AI collects from a client during a conversation.');
+  if (!id) { el.innerHTML = h + none('Select an account above'); return; }
+  el.innerHTML = h + `<div class="card pad"><form method="POST" action="${U.isave}" id="if"><input type="hidden" name="account_id" value="${esc(id)}"><input type="hidden" name="fields_json" id="ij">
+    <label style="margin-top:0">Fields (id · label · type)</label><div id="irows"></div><div class="row" style="margin-top:12px"><button type="button" class="ghost sm" id="iadd">+ Add field</button></div>
+    <div class="row" style="margin-top:16px"><button class="btn" type="submit">Save</button><button class="danger" type="button" id="idl" ${id in D.integrations ? '' : 'disabled'}>Remove all</button></div></form></div>`;
+  const row = (f = {}) => { const d = document.createElement('div'); d.className = 'frow';
+    d.innerHTML = `<input type="text" class="fi" placeholder="id (name, phone…)" value="${esc(f.id || '')}"><input type="text" class="fl" placeholder="Label" value="${esc(f.label || '')}">
+      <select class="ft">${D.types.map(t => `<option${t === (f.type || 'text') ? ' selected' : ''}>${t}</option>`).join('')}</select>
+      <label><input type="checkbox" class="fr"${f.required ? ' checked' : ''}> required</label><button type="button" class="ghost sm">✕</button>`;
+    d.querySelector('button').onclick = () => d.remove(); $('#irows').appendChild(d); };
+  ((D.integrations[id] || {}).fields || []).forEach(row); if (!$('#irows').children.length) row();
+  $('#iadd').onclick = () => row(); $('#idl').onclick = () => post(U.idel, { account_id: id }, 'Remove data fields for ' + nm(id) + '?');
+  $('#if').onsubmit = () => { let n = 0;
+    $('#ij').value = JSON.stringify([...document.querySelectorAll('#irows .frow')].map(r => { const l = r.querySelector('.fl').value.trim(); let i = r.querySelector('.fi').value.trim();
+      if (!l && !i) return null; if (!i) i = (l.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')) || 'field_' + (++n);
+      return { id: i, label: l || i, type: r.querySelector('.ft').value, required: r.querySelector('.fr').checked }; }).filter(Boolean)); };
+}
+function rRecords() {
+  const el = $('#p-records'), c = cl(ctx.c), ids = c ? c.ids : [];
+  el.innerHTML = head('Records', 'Client data collected by the AI (latest 200) for this client\'s accounts.') + `<div class="bar"><select id="rs"><option value="">All accounts of this client</option>${ids.map(i => `<option value="${esc(i)}"${i === ctx.a ? ' selected' : ''}>${esc(nm(i))}</option>`).join('')}</select><input type="text" id="rq" placeholder="Search…"></div><div class="card tw"><table><thead><tr><th>Account</th><th>Data</th><th>Updated</th><th></th></tr></thead><tbody id="rb"></tbody></table></div>`;
+  const label = (acc, k) => { const f = ((D.integrations[acc] || {}).fields || []).find(x => x.id === k); return f ? f.label : k; };
+  const draw1 = () => { const a = $('#rs').value, q = $('#rq').value.toLowerCase();
+    $('#rb').innerHTML = D.records.filter(r => (a ? r.account_id === a : ids.includes(r.account_id)) && (!q || JSON.stringify(r.data).toLowerCase().includes(q) || r.conversation_id.toLowerCase().includes(q))).map(r => `<tr><td>${esc(nm(r.account_id))}<div class="mono mut">${esc(r.conversation_id)}</div></td>
+      <td><div class="chips">${Object.keys(r.data).map(k => `<span class="chip"><b>${esc(label(r.account_id, k))}</b> ${esc(r.data[k])}</span>`).join('') || '<span class="mut">empty</span>'}</div></td>
+      <td class="mut" style="white-space:nowrap">${esc((r.updated_at || '').replace('T', ' ').slice(0, 16))}</td><td><button class="danger sm" data-a="${esc(r.account_id)}" data-c="${esc(r.conversation_id)}">Delete</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">No records</td></tr>'; };
+  el.onclick = e => { const b = e.target.closest('button[data-c]'); if (b) post(U.rdel, { account_id: b.dataset.a, conversation_id: b.dataset.c }, 'Delete this record?'); };
+  $('#rs').onchange = draw1; $('#rq').oninput = draw1; draw1();
+}
+function rSheets() {
+  const el = $('#p-sheets'), c = cl(ctx.c), ids = c ? c.ids : [];
+  el.innerHTML = head('Google Sheets', 'Mirror collected client data into a Google Sheet per account.') + `<div class="card tw"><table><thead><tr><th>Account</th><th>Status</th><th></th></tr></thead><tbody>` +
+    (ids.map(id => { const s = D.sheets[id];
+      const st = !s ? '<span class="badge off">not connected</span>' : s.spreadsheet_id ? `<span class="badge ok">connected</span><div class="mut" style="margin-top:4px">${esc(s.sheet_title || '')}</div><div class="mono mut">${esc(s.spreadsheet_id)}</div>` : '<span class="badge">sheet not chosen</span>';
+      return `<tr><td><b>${esc(nm(id))}</b><div class="mono mut">${esc(id)}</div></td><td>${st}</td><td><div class="acts"><a class="ghost sm" href="${U.gcon}?account_id=${encodeURIComponent(id)}">${s ? 'Reconnect' : 'Connect'}</a>${s ? `<button class="danger sm" data-d="${esc(id)}">Disconnect</button>` : ''}</div></td></tr>`; }).join('') || '<tr><td colspan="3" class="empty">No accounts</td></tr>') + '</tbody></table></div>';
+  el.onclick = e => { const b = e.target.closest('button[data-d]'); if (b) post(U.gdis, { account_id: b.dataset.d }, 'Disconnect Google Sheet for ' + nm(b.dataset.d) + '?'); };
+}
+
+/* ================= CATALOG (global admin) ================= */
+const CAT = { list: [], current: null, items: [], total: 0, offset: 0, limit: 30, q: '', userFilter: '' };
+
+async function catLoadList() {
+  // глобальний адмін бачить усі каталоги; фільтр — опційно
+  const r = await jget(U.cat.list);
+  if (!r.ok) { toast(r.error || 'Failed', true); return; }
+  CAT.list = r.catalogs || [];
+  if (CAT.current && !CAT.list.find(c => c.id === CAT.current)) CAT.current = null;
+  if (!CAT.current && CAT.list.length) CAT.current = CAT.list[0].id;
+  $('#cat-count').textContent = CAT.list.length || '';
+  catRenderList();
+  if (CAT.current) await catLoadItems(0);
+  else catRenderItems();
+}
+
+function catRenderList() {
+  const host = $('#cat-list');
+  if (!host) return;
+  if (!CAT.list.length) {
+    host.innerHTML = `<div class="cat-empty">Ще немає каталогів.<br><br><button class="btn" id="cat-new-empty">+ Створити каталог</button></div>`;
+    $('#cat-new-empty').onclick = () => catCreateCatalog();
+    return;
+  }
+  // групуємо за власником (user_id)
+  const groups = {};
+  CAT.list.forEach(c => { const k = c.user_id == null ? '—' : ('u' + c.user_id); (groups[k] = groups[k] || []).push(c); });
+  host.innerHTML = Object.entries(groups).map(([k, items]) => {
+    const label = k === '—' ? 'Глобальні' : (D.users.find(u => 'u' + u.id === k)?.email || k);
+    return `<div style="font-size:.7rem;text-transform:uppercase;color:var(--mut);letter-spacing:1px;padding:8px 4px 4px">${esc(label)}</div>` +
+      items.map(c => `
+        <div class="cat-item ${c.id === CAT.current ? 'on' : ''}" data-id="${esc(c.id)}">
+          <div class="cname">${esc(c.name)}${c.is_default ? ' <span class="badge">default</span>' : ''}</div>
+          <div class="cmeta">${c.n || 0}</div>
+          <div class="ctools">
+            <button title="Перейменувати" data-a="ren">✎</button>
+            <button title="Видалити" data-a="del">✕</button>
+          </div>
+        </div>`).join('');
+  }).join('');
+  host.onclick = async e => {
+    const it = e.target.closest('.cat-item'); if (!it) return;
+    const id = it.dataset.id, btn = e.target.closest('button[data-a]');
+    if (!btn) { CAT.current = id; CAT.offset = 0; catRenderList(); await catLoadItems(0); return; }
+    e.stopPropagation();
+    const a = btn.dataset.a;
+    if (a === 'ren') {
+      const cur = CAT.list.find(c => c.id === id);
+      const name = prompt('Нова назва каталогу:', cur ? cur.name : '');
+      if (!name) return;
+      const r = await jpost(U.cat.rename, { catalog_id: id, name });
+      if (!r.ok) toast(r.error || 'Failed', true);
+      await catLoadList();
+    } else if (a === 'del') {
+      if (!confirm('Видалити каталог і всі його позиції?')) return;
+      const r = await jpost(U.cat.delete, { catalog_id: id });
+      if (!r.ok) { toast(r.error || 'Failed', true); return; }
+      CAT.current = null; await catLoadList();
+    }
+  };
+}
+
+async function catCreateCatalog() {
+  const name = prompt('Назва нового каталогу:');
+  if (!name) return;
+  // у глобального адміна user_id = NULL → глобальний каталог
+  const r = await jpost(U.cat.create, { name });
+  if (!r.ok) { toast(r.error || 'Failed', true); return; }
+  CAT.current = r.catalog.id;
+  await catLoadList();
+}
+
+async function catLoadItems(offset) {
+  if (!CAT.current) { CAT.items = []; CAT.total = 0; catRenderItems(); return; }
+  const params = new URLSearchParams({ catalog_id: CAT.current, limit: String(CAT.limit), offset: String(offset || 0), q: CAT.q || '' });
+  const r = await jget(U.cat.items + '?' + params.toString());
+  if (!r.ok) { toast(r.error || 'Failed', true); return; }
+  CAT.items = r.items || []; CAT.total = r.total || 0; CAT.offset = offset || 0;
+  catRenderItems();
+}
+
+function formatPriceJs(it) {
+  const t = it.price_type;
+  const cur = it.currency ? ' ' + it.currency : '';
+  const unit = it.unit ? '/' + it.unit : '';
+  const f = n => Number.isInteger(n) ? String(n) : n.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
+  if (t === 'free') return 'безкоштовно';
+  if (t === 'on_request' || it.price == null) return 'ціна за запитом';
+  if (t === 'from') return `від ${f(it.price)}${cur}${unit}`;
+  if (t === 'range' && it.price_max != null) return `${f(it.price)}–${f(it.price_max)}${cur}${unit}`;
+  return `${f(it.price)}${cur}${unit}`;
+}
+
+function catRenderItems() {
+  const host = $('#cat-items');
+  if (!host) return;
+  const cur = CAT.list.find(c => c.id === CAT.current);
+  if (!cur) { host.innerHTML = '<div class="cat-empty">Обери каталог зліва.</div>'; $('#cat-actions').style.display = 'none'; $('#cat-bind').innerHTML = ''; return; }
+  $('#cat-actions').style.display = '';
+  const rows = CAT.items.map(it => {
+    const price = formatPriceJs(it);
+    return `<div class="item-row" data-id="${esc(it.id)}">
+      <div><div class="iname">${esc(it.name)}</div><div class="imeta">${esc(it.category || '')}${it.category && price ? ' · ' : ''}${esc(price)}</div></div>
+      <div class="mut" style="font-size:.76rem">${esc(it.kind || '')}</div>
+      <div class="mut" style="font-size:.76rem">${it.updated_at ? new Date(it.updated_at * 1000).toLocaleDateString('uk-UA') : ''}</div>
+      <div class="iacts"><button data-a="edit">✎</button><button data-a="del" class="del">✕</button></div>
+    </div>`; }).join('');
+  const empty = CAT.items.length ? '' : `<div class="cat-empty">${CAT.q ? 'Нічого не знайдено.' : 'Позицій ще немає.'}</div>`;
+  const pager = CAT.total > CAT.limit ? `<div class="pager">
+    <button class="ghost sm" ${CAT.offset === 0 ? 'disabled' : ''} data-p="prev">←</button>
+    <span>${CAT.offset + 1}–${Math.min(CAT.offset + CAT.limit, CAT.total)} з ${CAT.total}</span>
+    <button class="ghost sm" ${CAT.offset + CAT.limit >= CAT.total ? 'disabled' : ''} data-p="next">→</button></div>` : '';
+  host.innerHTML = `<div class="bar" style="margin-bottom:0">
+      <input type="text" id="cat-q" placeholder="Пошук позицій…" value="${esc(CAT.q)}">
+      <button class="btn fix" id="cat-add">+ Позиція</button>
+      <button class="ghost fix" id="cat-import">📥 З Google Sheet</button></div>
+    <div style="margin-top:10px">${rows}${empty}${pager}</div>`;
+  $('#cat-q').oninput = debounce(async e => { CAT.q = e.target.value.trim(); await catLoadItems(0); }, 300);
+  $('#cat-add').onclick = () => openItemModal(null);
+  $('#cat-import').onclick = () => openSheetImportModal();
+  host.querySelectorAll('button[data-p]').forEach(b => b.onclick = () => catLoadItems(Math.max(0, CAT.offset + (b.dataset.p === 'next' ? CAT.limit : -CAT.limit))));
+  host.querySelectorAll('.item-row').forEach(r => r.onclick = async e => {
+    const id = r.dataset.id, a = e.target.closest('button')?.dataset.a;
+    if (a === 'edit') openItemModal(CAT.items.find(x => x.id === id));
+    else if (a === 'del') {
+      if (!confirm('Видалити цю позицію?')) return;
+      const r2 = await jpost(U.cat.itemDelete, { catalog_id: CAT.current, item_id: id });
+      if (!r2.ok) toast(r2.error || 'Failed', true);
+      await catLoadItems(CAT.offset);
+      await catLoadList();
+    }
+  });
+  catRenderBindings();
+}
+
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+async function catRenderBindings() {
+  const host = $('#cat-bind');
+  if (!host || !CAT.current) { if (host) host.innerHTML = ''; return; }
+  const r = await jget(U.cat.bindingsGet + '?catalog_id=' + encodeURIComponent(CAT.current));
+  if (!r.ok) { host.innerHTML = ''; return; }
+  const bound = new Set(r.accounts || []);
+  // глобальний адмін бачить усі акаунти всіх юзерів
+  const allAccs = Object.values(accMap);
+  host.innerHTML = `<div class="bind-panel">
+    <h4>Прив'язка до ботів (усі акаунти)</h4>
+    <div class="mut" style="font-size:.78rem;margin-bottom:8px">Обери, які боти бачать цей каталог.</div>
+    <div class="bind-list">
+      ${allAccs.map(a => `
+        <label class="bind-item">
+          <input type="checkbox" data-acc="${esc(a.id)}" ${bound.has(a.id) ? 'checked' : ''}>
+          <div><div>${esc(nm(a.id))}</div><small>${esc(a.platform || '')} · ${esc(a.id)}${ownerOf[a.id] ? ' · ' + esc((clients.find(c => c.k === ownerOf[a.id]) || {}).label || '') : ''}</small></div>
+        </label>`).join('')}
+    </div>
+    <div class="row" style="margin-top:10px"><button class="btn sm" id="cat-bind-save">Зберегти прив'язки</button></div>
+  </div>`;
+  $('#cat-bind-save').onclick = async () => {
+    const all = Object.values(accMap).map(a => a.id);
+    const ids = [...host.querySelectorAll('input[type=checkbox]')].filter(x => x.checked).map(x => x.dataset.acc);
+    for (const acc of all) {
+      const cur = await jget(U.cat.bindingsGet + '?account_id=' + encodeURIComponent(acc));
+      const curIds = new Set((cur.catalogs || []).map(x => x.id));
+      if (ids.includes(acc)) curIds.add(CAT.current);
+      else curIds.delete(CAT.current);
+      await jpost(U.cat.bindingsSet, { account_id: acc, catalog_ids: [...curIds] });
+    }
+    toast('Прив\'язки збережено');
+    catRenderBindings();
+  };
+}
+
+function openItemModal(item) {
+  const isNew = !item, it = item || {};
+  const bd = document.createElement('div');
+  bd.className = 'modal-bd';
+  bd.innerHTML = `
+    <div class="modal">
+      <div class="modal-h"><h3>${isNew ? 'Нова позиція' : 'Редагувати позицію'}</h3><button class="x">×</button></div>
+      <div class="modal-b">
+        <label>Назва *</label><input type="text" id="m-name" value="${esc(it.name || '')}" maxlength="200">
+        <div class="grid2">
+          <div><label>Тип</label><select id="m-kind">${['product','service','subscription','rental','course','event','package','other'].map(k => `<option value="${k}"${it.kind === k ? ' selected' : ''}>${k}</option>`).join('')}</select></div>
+          <div><label>Категорія</label><input type="text" id="m-category" value="${esc(it.category || '')}" maxlength="120"></div>
+        </div>
+        <div class="grid2">
+          <div><label>Тип ціни</label><select id="m-ptype">${['fixed','from','range','on_request','free'].map(t => `<option value="${t}"${it.price_type === t ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
+          <div><label>Наявність</label><select id="m-avail">${['available','out_of_stock','preorder','by_request','unavailable'].map(t => `<option value="${t}"${it.availability === t ? ' selected' : ''}>${t}</option>`).join('')}</select></div>
+        </div>
+        <div class="grid2">
+          <div><label>Ціна</label><input type="number" step="0.01" id="m-price" value="${it.price != null ? it.price : ''}"></div>
+          <div><label>Ціна до (range)</label><input type="number" step="0.01" id="m-pmax" value="${it.price_max != null ? it.price_max : ''}"></div>
+        </div>
+        <div class="grid2">
+          <div><label>Валюта</label><input type="text" id="m-cur" value="${esc(it.currency || 'UAH')}" maxlength="8"></div>
+          <div><label>Одиниця</label><input type="text" id="m-unit" value="${esc(it.unit || '')}" maxlength="30"></div>
+        </div>
+        <label>Опис</label><textarea id="m-desc" rows="3" maxlength="1500">${esc(it.description || '')}</textarea>
+        <label>URL</label><input type="text" id="m-url" value="${esc(it.url || '')}" maxlength="500">
+        <label>Теги (через кому)</label><input type="text" id="m-tags" value="${esc((it.tags || []).join(', '))}" maxlength="300">
+      </div>
+      <div class="modal-f"><button class="ghost" id="m-cancel">Скасувати</button><button class="btn" id="m-save">${isNew ? 'Додати' : 'Зберегти'}</button></div>
+    </div>`;
+  document.body.appendChild(bd);
+  const close = () => bd.remove();
+  bd.querySelector('.x').onclick = close; $('#m-cancel').onclick = close;
+  bd.onclick = e => { if (e.target === bd) close(); };
+  $('#m-save').onclick = async () => {
+    const payload = {
+      name: $('#m-name').value.trim(), kind: $('#m-kind').value, category: $('#m-category').value.trim(),
+      price_type: $('#m-ptype').value, availability: $('#m-avail').value,
+      price: $('#m-price').value, price_max: $('#m-pmax').value,
+      currency: $('#m-cur').value.trim(), unit: $('#m-unit').value.trim(),
+      description: $('#m-desc').value.trim(), url: $('#m-url').value.trim(),
+      tags: $('#m-tags').value.split(',').map(x => x.trim()).filter(Boolean),
+    };
+    if (!payload.name) { toast('Назва обов\'язкова', true); return; }
+    const r = await jpost(U.cat.itemSave, { catalog_id: CAT.current, item_id: it.id || null, item: payload });
+    if (!r.ok) { toast(r.error || 'Failed', true); return; }
+    close(); await catLoadItems(isNew ? 0 : CAT.offset); await catLoadList();
+  };
+}
+
+async function openSheetImportModal() {
+  const allAccs = Object.values(accMap);
+  const connected = allAccs.filter(a => D.sheets[a.id] && D.sheets[a.id].spreadsheet_id);
+  const bd = document.createElement('div');
+  bd.className = 'modal-bd';
+  bd.innerHTML = `
+    <div class="modal">
+      <div class="modal-h"><h3>Імпорт з Google Sheet</h3><button class="x">×</button></div>
+      <div class="modal-b">
+        <div class="sheet-note">Перший рядок — заголовки (<b>name</b>, <b>price</b>, <b>category</b>…). Якщо назв немає — перша колонка стане назвою.</div>
+        ${connected.length === 0 ? '<div class="msg err">Жоден акаунт не має підключеного Google Sheet.</div>' : ''}
+        <label>Google Sheet</label>
+        <select id="imp-sheet">${connected.map(a => `<option value="${esc(a.id)}">${esc(nm(a.id))} — ${esc(D.sheets[a.id].sheet_title || '')}</option>`).join('')}</select>
+        <label>Або введи Spreadsheet ID вручну</label><input type="text" id="imp-spid" placeholder="1AbC…">
+        <label>Назва аркуша (необов'язково)</label><input type="text" id="imp-title">
+      </div>
+      <div class="modal-f"><button class="ghost" id="imp-cancel">Скасувати</button><button class="btn" id="imp-go">Імпортувати</button></div>
+    </div>`;
+  document.body.appendChild(bd);
+  const close = () => bd.remove();
+  bd.querySelector('.x').onclick = close; $('#imp-cancel').onclick = close;
+  bd.onclick = e => { if (e.target === bd) close(); };
+  $('#imp-go').onclick = async () => {
+    const manual = $('#imp-spid').value.trim();
+    let spid, title = $('#imp-title').value.trim();
+    if (manual) spid = manual;
+    else {
+      const acc = $('#imp-sheet').value;
+      const s = D.sheets[acc];
+      if (!s || !s.spreadsheet_id) { toast('Sheet не підключено', true); return; }
+      spid = s.spreadsheet_id; title = title || s.sheet_title || '';
+    }
+    const r = await jpost(U.cat.importStart, { catalog_id: CAT.current, spreadsheet_id: spid, sheet_title: title });
+    if (!r.ok) { toast(r.error || 'Failed', true); return; }
+    close(); toast('Імпорт запущено…');
+    const jid = r.job_id; let polls = 0;
+    const timer = setInterval(async () => {
+      polls++;
+      const j = await jget(U.cat.importJob + '?job_id=' + encodeURIComponent(jid));
+      if (!j.ok) { clearInterval(timer); toast(j.error || 'Job failed', true); return; }
+      const st = j.job.status;
+      if (st === 'applied' || st === 'error') {
+        clearInterval(timer);
+        toast(st === 'applied' ? `Імпортовано ${j.job.result?.imported || 0} позицій` : ('Помилка: ' + (j.job.error || '')), st === 'error');
+        await catLoadItems(0); await catLoadList();
+      } else if (polls > 60) { clearInterval(timer); toast('Імпорт триває надто довго', true); }
+    }, 1000);
+  };
+}
+
+function rCatalog() {
+  const el = $('#p-catalog');
+  el.innerHTML = head('Catalog (глобально)', 'Усі каталоги всіх клієнтів. Глобальний адмін бачить і редагує все.') + `
+    <div class="cat-grid">
+      <div><div class="card pad" style="padding:12px">
+        <div class="row" style="justify-content:space-between;margin-bottom:8px"><b style="font-size:.9rem">Каталоги</b><button class="ghost sm" id="cat-new">+</button></div>
+        <div class="cat-list" id="cat-list"></div>
+      </div></div>
+      <div>
+        <div class="card pad" id="cat-actions" style="padding:14px"></div>
+        <div id="cat-items" style="margin-top:12px"></div>
+        <div id="cat-bind" style="margin-top:16px"></div>
+      </div>
+    </div>`;
+  $('#cat-new').onclick = () => catCreateCatalog();
+  catLoadList();
+}
+
+/* ---- асистент ---- */
+let hist = [], asFor = null;
+const chat = $('#chat');
+function mdText(s) { s = esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>'); const o = []; let ul = false;
+  s.split('\n').forEach(l => { const m = l.match(/^\s*(?:[-*]|\d+\.)\s+(.*)/); if (m) { if (!ul) { o.push('<ul>'); ul = true; } o.push('<li>' + m[1] + '</li>'); } else { if (ul) { o.push('</ul>'); ul = false; } if (l.trim()) o.push('<p>' + l + '</p>'); } });
+  return o.join('') + (ul ? '</ul>' : ''); }
+function md(s) { return String(s).split(/```[^\n]*\n?/).map((part, i) => i % 2 ? `<div class="cb2"><button type="button" class="cp">Copy</button><pre>${esc(part.replace(/\n$/, ''))}</pre></div>` : mdText(part)).join(''); }
+function say(t, c) { const d = document.createElement('div'); d.className = 'm ' + c; d.innerHTML = c === 'a' ? md(t) : esc(t); chat.appendChild(d); chat.scrollTop = 1e9; return d; }
+const aapi = (id, msg) => fetch(U.asst, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ account_id: id, message: msg, history: hist }) }).then(r => r.json());
+function findings(list) { $('#fnd').innerHTML = list.length ? list.map(f => `<div class="f ${f.level}"><i></i><span>${esc(f.text)}</span></div>`).join('') : '<div class="f good"><i></i><span>No obvious problems found.</span></div>'; }
+function rAsst() {
+  if (ctx.a === asFor) return; const id = asFor = ctx.a; hist = []; chat.innerHTML = ''; $('#fnd').innerHTML = '';
+  $('#asn').textContent = id ? nm(id) : 'Select an account to review it';
+  if (!id) return; say('Hi! I\'m Assti. I can see this account\'s settings (prompt, fields, sheet and table links) but I can\'t change anything.', 'a');
+  aapi(id, '').then(r => { if (id === ctx.a && r.findings) findings(r.findings); }).catch(() => {});
+}
+function ask(t) { if (!ctx.a) return; const id = ctx.a; say(t, 'u'); const w = say('Thinking…', 'a'); $('#as').disabled = true;
+  aapi(id, t).then(r => { w.remove(); if (id !== ctx.a) return; if (r.findings) findings(r.findings); if (!r.ok) { say('Error: ' + (r.error || 'failed'), 'a'); return; }
+    say(r.reply, 'a'); hist.push({ role: 'user', content: t }, { role: 'assistant', content: r.reply }); hist = hist.slice(-6); })
+    .catch(() => { w.remove(); say('No connection.', 'a'); }).then(() => { $('#as').disabled = false; }); }
+chat.onclick = e => { const b = e.target.closest('.cp'); if (!b) return; navigator.clipboard.writeText(b.nextElementSibling.textContent).then(() => { b.textContent = 'Copied'; setTimeout(() => { b.textContent = 'Copy'; }, 1200); }).catch(() => {}); };
+$('#af').onsubmit = e => { e.preventDefault(); const v = $('#aq').value.trim(); if (v) { $('#aq').value = ''; ask(v); } };
+$('#chips').innerHTML = ['What is wrong here?', 'Improve my prompt', 'Are all fields covered?'].map(s => `<button type="button">${s}</button>`).join('');
+$('#chips').onclick = e => { const b = e.target.closest('button'); if (b) ask(b.textContent); };
+$('#atg').onclick = () => $('#app').classList.toggle('collapsed-asst'); $('#afab').onclick = () => $('#app').classList.remove('collapsed-asst');
+if (innerWidth < 1180) $('#app').classList.add('collapsed-asst');
+
+function draw() {
+  document.querySelectorAll('.tab[data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === ctx.t));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === 'p-' + ctx.t));
+  const scoped = SCOPED.includes(ctx.t), c = cl(ctx.c); $('#ctx').hidden = !scoped;
+  if (scoped) {
+    combo($('#cc'), 'Client', clients.map(x => ({ v: x.k, l: x.label, s: x.sub })), ctx.c, k => { setClient(k); save(); draw(); });
+    combo($('#ca'), 'Bot account', (c ? c.ids : []).map(id => ({ v: id, l: nm(id), s: (accMap[id] || {}).platform || '' })), ctx.a, a => { ctx.a = a; save(); draw(); });
+  }
+  ({ clients: rClients, accounts: rAccounts, prompts: rPrompts, integrations: rFields, records: rRecords, sheets: rSheets, catalog: rCatalog })[ctx.t](); rAsst();
+}
+
+(function () {
+  let st = null; const h = location.hash.slice(1);
+  if (h) { const [t, c, a] = h.split('/').map(decodeURIComponent); st = { t, c, a }; }
+  else try { st = JSON.parse(localStorage.getItem('adm.ctx') || 'null'); if (st) st.t = 'clients'; } catch (e) {}
+  if (st && cl(st.c)) { ctx.c = st.c; ctx.a = (cl(st.c).ids.includes(st.a) ? st.a : cl(st.c).ids[0]) || ''; }
+  ctx.t = st && $('#p-' + st.t) ? st.t : 'clients'; go(ctx.t);
+})();
+{% endraw %}
+</script>
+{% endif %}
+</body>
+</html>

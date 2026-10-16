@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiklio — Replace {{ platform_label }} account?</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box;}
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fff; color: #14172b; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;}
+        .card { max-width: 520px; width: 100%; background: #ffffff; border: 1px solid #dfe3f5; border-radius: 12px; padding: 2rem;}
+        .icon { width: 44px; height: 44px; margin: 0 auto 1.2rem; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.3); color: #d64545;}
+        .icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
+        h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.8rem; text-align: center; letter-spacing: -0.02em;}
+        p { color: rgba(20,23,43,0.68); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1rem;}
+        p strong { color: #14172b; font-weight: 600;}
+
+        .account-box { background: #ffffff; border: 1px solid #dfe3f5; border-radius: 8px; padding: 1rem 1.1rem; margin: 1.3rem 0; display: flex; align-items: center; gap: 0.85rem;}
+        .account-box .avatar { width: 40px; height: 40px; border-radius: 50%; background: #4c5fd7; flex-shrink: 0;}
+        .account-box .info { display: flex; flex-direction: column; min-width: 0;}
+        .account-box .name { font-weight: 600; font-size: 0.95rem;}
+        .account-box .id { font-size: 0.75rem; color: rgba(20,23,43,0.58); font-family: 'SF Mono', Menlo, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+
+        .warning { background: rgba(255,107,107,0.06); border: 1px solid rgba(255,107,107,0.2); color: rgba(20,23,43,0.8); padding: 0.9rem 1.1rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.6; margin: 1.3rem 0;}
+        .warning strong { color: #d64545; font-weight: 600; display: block; margin-bottom: 0.35rem;}
+        .warning ul { list-style: none; padding-left: 0;}
+        .warning li { padding-left: 1rem; position: relative; margin-bottom: 0.3rem;}
+        .warning li:last-child { margin-bottom: 0;}
+        .warning li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 4px; height: 4px; border-radius: 50%; background: #eaeefc;}
+
+        .actions { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1.5rem;}
+        a.btn { display: block; width: 100%; text-align: center; background: #4c5fd7; border: 1px solid rgba(76,95,215,0.35); border-radius: 8px; padding: 0.75rem 1.3rem; color: #fff; font-weight: 500; text-decoration: none; font-size: 0.9rem; font-family: inherit; transition: background 0.15s, border-color 0.15s;}
+        a.btn:hover { background: #3f50c4; border-color: rgba(76,95,215,0.55);}
+        a.btn-secondary { display: block; width: 100%; text-align: center; background: #f4f6ff; border: 1px solid #cfd5f0; border-radius: 8px; padding: 0.75rem 1.3rem; color: #14172b; font-weight: 500; text-decoration: none; font-size: 0.9rem; transition: background 0.15s;}
+        a.btn-secondary:hover { background: #eaeefc;}
+    
+        /* ===== Chatwave light theme: white + blue (matches promo video) ===== */
+        :root { --cw-ink:#14172b; --cw-primary:#4c5fd7; --cw-primary-dark:#3f50c4; --cw-soft:#eef0ff; --cw-line:#dfe3f5; }
+        body { background: #f6f8ff; color: var(--cw-ink); -webkit-font-smoothing: antialiased; }
+        h1, h2, h3, header .logo, .logo { font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; letter-spacing: -0.01em; }
+        .card, .modal, .tile, .chat-window, .settings-panel, .add-menu, .user-menu {
+            box-shadow: 0 1px 2px rgba(20,23,43,.04), 0 10px 30px -12px rgba(76,95,215,.18);
+        }
+        a { color: inherit; }
+        ::selection { background: rgba(76,95,215,.18); }
+        input:focus, textarea:focus, select:focus { border-color: var(--cw-primary); box-shadow: 0 0 0 4px rgba(76,95,215,.12); outline: none; }
+
+        .logo, .logo span { color: var(--cw-primary); }
+        h1 span, h2 span { color: var(--cw-primary); }
+        table th { color: rgba(20,23,43,.55); }
+        .status.connected { background: #e8f7ee; border-color: #bfe8cf; color: #1f9d55; }
+        .status.disconnected { background: #fdecec; border-color: #f5c6c6; color: #d64545; }
+        .status.neutral { background: #f1f3fd; border-color: var(--cw-line); color: rgba(20,23,43,.6); }
+        .success { background: #e8f7ee; border: 1px solid #bfe8cf; color: #1f9d55; }
+        .error { background: #fdecec; border: 1px solid #f5c6c6; color: #d64545; }
+        button.danger, .danger { background: #fdecec; border-color: #f5c6c6; color: #d64545; }
+        button.danger:hover { background: #fbdcdc; border-color: #eba5a5; }
+        button.ghost { background: #fff; border: 1px solid var(--cw-line); color: var(--cw-ink); }
+        button.ghost:hover { background: var(--cw-soft); }
+        tr:hover td { background: #f7f8ff; }
+        .client-row.selected td { background: var(--cw-soft); }
+        code { background: var(--cw-soft); color: var(--cw-primary-dark); }
+        .modal-backdrop { background: rgba(20,23,43,.45); }
+.btn, a.btn { color: #fff; } .btn-secondary, a.btn-secondary { background: #fff; border: 1px solid var(--cw-line); color: var(--cw-ink); } .btn-secondary:hover, a.btn-secondary:hover { background: var(--cw-soft); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+        </div>
+
+        <h1>Replace existing {{ platform_label }}?</h1>
+
+        <p>
+            You already have a {{ platform_label }} account connected to your Spiklio profile.
+            Our messaging provider can only hold <strong>one {{ platform_label }} account per profile</strong>,
+            so connecting a new one will <strong>replace the existing one</strong>.
+        </p>
+
+        <div class="account-box">
+            <div class="avatar"></div>
+            <div class="info">
+                <span class="name">{{ existing_account.display_name or existing_account.account_id }}</span>
+                <span class="id">{{ existing_account.account_id }}</span>
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>What happens if you continue:</strong>
+            <ul>
+                <li>The current {{ platform_label }} will be disconnected from Spiklio.</li>
+                <li>Its AI rules and collected client records will remain in the database, but the account itself will no longer receive or send messages.</li>
+                <li>You'll be redirected to {{ platform_label }} to sign in with the new account.</li>
+            </ul>
+        </div>
+
+        <div class="actions">
+            <a href="{{ url_for('uadmin_connect_platform', platform=platform_id) }}?confirm=1" class="btn">
+                Yes, replace it
+            </a>
+            <a href="{{ url_for('uadmin_dashboard') }}" class="btn-secondary">
+                Cancel
+            </a>
+        </div>
+    </div>
+</body>
+</html>

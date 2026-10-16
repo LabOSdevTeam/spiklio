@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiklio — Create Account</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        html { -webkit-tap-highlight-color: transparent; }
+        a, button, [role=button], label { -webkit-touch-callout: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box;}
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f6f8ff; color: #14172b; padding: 2rem; min-height: 100vh; display: flex; align-items: center; justify-content: center; -webkit-font-smoothing: antialiased;}
+        .card { max-width: 420px; width: 100%; background: #ffffff; border: 1px solid #dfe3f5; border-radius: 18px; padding: 2rem; box-shadow: 0 1px 2px rgba(20,23,43,.04), 0 10px 30px -12px rgba(76,95,215,.18);}
+        /* ===== ЛОГО (як в uadmin: без світіння, gap 6px) ===== */
+        .brand { display: inline-flex; align-items: center; gap: 6px; user-select: none; line-height: 1; justify-content: center; width: 100%; margin-bottom: 0.5rem; font-family: 'Poppins', 'Inter', sans-serif; }
+        .brand-mark { width: 30px; height: 30px; display: flex; flex-shrink: 0; }
+        .brand-mark img { width: 100%; height: 100%; display: block; }
+        .brand-name { color: var(--cw-primary); font-size: 1.3rem; font-weight: 700; letter-spacing: -0.03em; }
+        :root { --cw-primary: #4c5fd7; }
+        h1 { font-family: 'Poppins', 'Inter', sans-serif; font-size: 1.4rem; font-weight: 700; text-align: center; margin-bottom: 0.4rem; color: #4c5fd7;}
+        .subtitle { color: rgba(20,23,43,0.58); font-size: 0.95rem; text-align: center; margin-bottom: 1.5rem;}
+        .error { background: #fdecec; border: 1px solid #f5c6c6; color: #d64545; padding: 0.75rem 1rem; border-radius: 10px; margin-bottom: 1.5rem; font-size: 0.9rem;}
+        input { width: 100%; background: #f4f6ff; border: 1px solid #dfe3f5; border-radius: 10px; padding: 0.85rem 1rem; color: #14172b; font-size: 0.95rem; font-family: inherit; outline: none; transition: border-color 0.3s ease, box-shadow 0.3s ease; margin-bottom: 0.8rem;}
+        input:focus { border-color: rgba(76,95,215,0.6); box-shadow: 0 0 0 4px rgba(76,95,215,0.1); background: #fff;}
+        input::placeholder { color: rgba(20,23,43,0.48);}
+        button { width: 100%; background: linear-gradient(135deg, #4c5fd7 0%, #3f50c4 100%); border: none; border-radius: 10px; padding: 0.85rem 1.5rem; color: #fff; font-weight: 600; cursor: pointer; font-size: 0.95rem; font-family: inherit; transition: transform 0.2s, box-shadow 0.3s, background 0.3s; margin-top: 0.5rem;}
+        button:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -5px rgba(76,95,215,0.6); background: linear-gradient(135deg, #3f50c4 0%, #4c5fd7 100%);}
+        button:active { transform: translateY(0) scale(0.98);}
+        .hint { text-align: center; color: rgba(20,23,43,0.58); font-size: 0.85rem; margin-top: 1rem;}
+        .hint a { color: #4c5fd7; text-decoration: none;}
+        .hint a:hover { text-decoration: underline;}
+        .pw-note { font-size: 0.78rem; color: rgba(20,23,43,0.48); margin: -0.4rem 0 0.8rem 0.2rem;}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="brand">
+            <span class="brand-mark"><img src="{{ url_for('template_file', filename='logo.svg') }}" alt="Spiklio"></span>
+            <span class="brand-name">Spiklio</span>
+        </div>
+        <p class="subtitle">Create your client account</p>
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
+        <form method="POST" action="{{ url_for('uadmin_register') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="email" name="email" placeholder="Email" autofocus required
+                   value="{{ email or '' }}">
+            <input type="password" name="password" placeholder="Password" required minlength="8">
+            <div class="pw-note">At least 8 characters.</div>
+            <input type="password" name="password2" placeholder="Confirm password" required minlength="8">
+            <button type="submit">Create account</button>
+        </form>
+        <p class="hint">Already have an account? <a href="{{ url_for('uadmin_login') }}">Sign in</a></p>
+    </div>
+</body>
+</html>

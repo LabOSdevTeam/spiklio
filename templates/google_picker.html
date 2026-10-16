@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiklio — Select sheet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box;}
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fff; color: #14172b; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;}
+        .card { max-width: 460px; width: 100%; background: #ffffff; border: 1px solid #dfe3f5; border-radius: 18px; padding: 2rem; text-align: center;}
+        h1 { font-size: 1.3rem; margin-bottom: 0.6rem;}
+        p { color: rgba(20,23,43,0.68); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5;}
+        button { background: linear-gradient(135deg, #4c5fd7 0%, #3f50c4 100%); border: none; border-radius: 10px; padding: 0.85rem 1.5rem; color: #fff; font-weight: 600; cursor: pointer; font-size: 0.95rem; font-family: inherit; width: 100%;}
+        button:disabled { opacity: 0.5; cursor: not-allowed;}
+        .status { margin-top: 1rem; font-size: 0.85rem; color: rgba(20,23,43,0.68); min-height: 1.2em;}
+        .status.error { color: #d64545;}
+        .status.success { color: #1f9d55;}
+    
+        /* ===== Chatwave light theme: white + blue (matches promo video) ===== */
+        :root { --cw-ink:#14172b; --cw-primary:#4c5fd7; --cw-primary-dark:#3f50c4; --cw-soft:#eef0ff; --cw-line:#dfe3f5; }
+        body { background: #f6f8ff; color: var(--cw-ink); -webkit-font-smoothing: antialiased; }
+        h1, h2, h3, header .logo, .logo { font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; letter-spacing: -0.01em; }
+        .card, .modal, .tile, .chat-window, .settings-panel, .add-menu, .user-menu {
+            box-shadow: 0 1px 2px rgba(20,23,43,.04), 0 10px 30px -12px rgba(76,95,215,.18);
+        }
+        a { color: inherit; }
+        ::selection { background: rgba(76,95,215,.18); }
+        input:focus, textarea:focus, select:focus { border-color: var(--cw-primary); box-shadow: 0 0 0 4px rgba(76,95,215,.12); outline: none; }
+
+        .logo, .logo span { color: var(--cw-primary); }
+        h1 span, h2 span { color: var(--cw-primary); }
+        table th { color: rgba(20,23,43,.55); }
+        .status.connected { background: #e8f7ee; border-color: #bfe8cf; color: #1f9d55; }
+        .status.disconnected { background: #fdecec; border-color: #f5c6c6; color: #d64545; }
+        .status.neutral { background: #f1f3fd; border-color: var(--cw-line); color: rgba(20,23,43,.6); }
+        .success { background: #e8f7ee; border: 1px solid #bfe8cf; color: #1f9d55; }
+        .error { background: #fdecec; border: 1px solid #f5c6c6; color: #d64545; }
+        button.danger, .danger { background: #fdecec; border-color: #f5c6c6; color: #d64545; }
+        button.danger:hover { background: #fbdcdc; border-color: #eba5a5; }
+        button.ghost { background: #fff; border: 1px solid var(--cw-line); color: var(--cw-ink); }
+        button.ghost:hover { background: var(--cw-soft); }
+        tr:hover td { background: #f7f8ff; }
+        .client-row.selected td { background: var(--cw-soft); }
+        code { background: var(--cw-soft); color: var(--cw-primary-dark); }
+        .modal-backdrop { background: rgba(20,23,43,.45); }
+.btn, a.btn { color: #fff; } .btn-secondary, a.btn-secondary { background: #fff; border: 1px solid var(--cw-line); color: var(--cw-ink); } .btn-secondary:hover, a.btn-secondary:hover { background: var(--cw-soft); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Оберіть Google Таблицю</h1>
+        <p>
+            Акаунт <strong>{{ account_id }}</strong> підключено до Google.
+            Тепер оберіть таблицю, куди AI буде записувати зібрані дані клієнтів.
+        </p>
+        <button id="pickBtn" onclick="openPicker()">Обрати таблицю</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+        var ACCESS_TOKEN = {{ access_token | tojson }};
+        var PICKER_API_KEY = {{ picker_api_key | tojson }};
+        var ACCOUNT_ID = {{ account_id | tojson }};
+        var pickerLoaded = false;
+
+        function setStatus(text, cls) {
+            var el = document.getElementById('status');
+            el.textContent = text;
+            el.className = 'status' + (cls ? ' ' + cls : '');
+        }
+
+        gapi.load('picker', function () { pickerLoaded = true; });
+
+        function openPicker() {
+            if (!ACCESS_TOKEN) {
+                setStatus('Немає токена доступу - поверніться і підключіть Google ще раз.', 'error');
+                return;
+            }
+            if (!pickerLoaded) {
+                setStatus('Picker ще завантажується, спробуйте за секунду...', '');
+                setTimeout(openPicker, 500);
+                return;
+            }
+            var view = new google.picker.DocsView(google.picker.ViewId.SPREADSHEETS)
+                .setMode(google.picker.DocsViewMode.LIST);
+            var picker = new google.picker.PickerBuilder()
+                .setOAuthToken(ACCESS_TOKEN)
+                .setDeveloperKey(PICKER_API_KEY)
+                .addView(view)
+                .setCallback(pickerCallback)
+                .build();
+            picker.setVisible(true);
+        }
+
+        function pickerCallback(data) {
+            if (data.action !== google.picker.Action.PICKED) return;
+            var file = data.docs[0];
+            document.getElementById('pickBtn').disabled = true;
+            setStatus('Зберігаємо вибір...', '');
+
+            var body = new URLSearchParams();
+            body.set('account_id', ACCOUNT_ID);
+            body.set('spreadsheet_id', file.id);
+
+            fetch('{{ url_for("admin_google_select_sheet") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString(),
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (res) {
+                    if (res.ok) {
+                        setStatus('Готово! Переходимо назад у адмінку...', 'success');
+                        setTimeout(function () { window.location.href = '{{ url_for("admin") }}'; }, 1000);
+                    } else {
+                        setStatus('Помилка: ' + (res.error || 'невідома'), 'error');
+                        document.getElementById('pickBtn').disabled = false;
+                    }
+                })
+                .catch(function () {
+                    setStatus('Не вдалося зв\'язатися з сервером.', 'error');
+                    document.getElementById('pickBtn').disabled = false;
+                });
+        }
+    </script>
+</body>
+</html>
